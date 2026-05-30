@@ -1,0 +1,1379 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1a3a1a">
+<meta name="description" content="FawnGuard – Ochrana srnčat při sečení">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FawnGuard">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>FawnGuard</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0d1f0d; --bg2:#132213; --bg3:#1c301c; --panel:#182818;
+  --border:rgba(120,180,80,.18); --border2:rgba(120,180,80,.32);
+  --green:#7ab450; --green2:#9ed46a; --green3:#b8e88a;
+  --amber:#e8c44a; --amber2:#f0d870; --red:#d45050;
+  --blue:#5090d4; --blue2:#80b8f0;
+  --text:#e8f0dc; --text2:#a8c090; --text3:#6a8860;
+  --radius:14px; --radius-sm:8px;
+  --shadow:0 4px 32px rgba(0,0,0,.55); --shadow-sm:0 2px 12px rgba(0,0,0,.35);
+  --font-head:'Playfair Display',Georgia,serif; --font-body:'DM Sans',sans-serif;
+  --transition:.22s cubic-bezier(.4,0,.2,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px;-webkit-tap-highlight-color:transparent}
+body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-height:100dvh;overflow-x:hidden;line-height:1.6}
+::selection{background:var(--green);color:#0d1f0d}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:99px}
+.hidden{display:none!important} .sr-only{position:absolute;width:1px;height:1px;clip:rect(0,0,0,0);overflow:hidden}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 60% at 20% 10%,rgba(74,120,40,.12) 0%,transparent 60%),radial-gradient(ellipse 60% 80% at 80% 90%,rgba(40,80,20,.1) 0%,transparent 60%);pointer-events:none;z-index:0}
+#app{position:relative;z-index:1;min-height:100dvh}
+
+/* ── SCREENS ── */
+.screen{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 20px;animation:fadeIn .4s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+.logo-block{text-align:center;margin-bottom:36px}
+.logo-icon{width:72px;height:72px;background:linear-gradient(135deg,var(--green),var(--green2));border-radius:22px;display:inline-flex;align-items:center;justify-content:center;font-size:38px;margin-bottom:16px;box-shadow:0 0 40px rgba(122,180,80,.25)}
+.logo-title{font-family:var(--font-head);font-size:2.2rem;font-weight:700;color:var(--green3);letter-spacing:-.5px}
+.logo-sub{font-size:.85rem;color:var(--text3);margin-top:4px;letter-spacing:.08em;text-transform:uppercase}
+
+.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:28px 24px;width:100%;max-width:420px;box-shadow:var(--shadow)}
+.card-title{font-family:var(--font-head);font-size:1.3rem;color:var(--green3);margin-bottom:20px}
+
+/* role/district pickers */
+.role-grid{display:grid;gap:12px}
+.role-btn{display:flex;align-items:center;gap:14px;padding:16px 18px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;transition:var(--transition);text-align:left;color:var(--text);font-family:var(--font-body);font-size:1rem}
+.role-btn:hover,.role-btn.selected{background:rgba(122,180,80,.1);border-color:var(--green);box-shadow:0 0 0 1px var(--green) inset}
+.role-btn .ri{font-size:1.6rem;min-width:36px;text-align:center} .role-btn .rl{font-weight:600;font-size:.95rem} .role-btn .rd{font-size:.8rem;color:var(--text3);margin-top:2px}
+.district-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.dist-btn{padding:12px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;transition:var(--transition);color:var(--text);font-family:var(--font-body);font-size:.9rem;text-align:center}
+.dist-btn:hover,.dist-btn.selected{background:rgba(122,180,80,.1);border-color:var(--green)}
+
+/* forms */
+.form-group{margin-bottom:18px}
+.form-group label{display:block;font-size:.82rem;color:var(--text3);margin-bottom:7px;text-transform:uppercase;letter-spacing:.06em;font-weight:500}
+.form-group input,.form-group select,.form-group textarea{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:11px 14px;color:var(--text);font-family:var(--font-body);font-size:.95rem;outline:none;transition:var(--transition)}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(122,180,80,.12)}
+.form-group textarea{resize:vertical;min-height:80px}
+.form-group select option{background:var(--bg2);color:var(--text)}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 22px;border-radius:var(--radius-sm);border:none;cursor:pointer;font-family:var(--font-body);font-size:.95rem;font-weight:600;transition:var(--transition);white-space:nowrap}
+.btn-primary{background:linear-gradient(135deg,var(--green),var(--green2));color:#0d1f0d;width:100%}
+.btn-primary:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.btn-secondary{background:var(--bg3);border:1px solid var(--border);color:var(--text)}
+.btn-secondary:hover{border-color:var(--green);background:rgba(122,180,80,.08)}
+.btn-danger{background:rgba(212,80,80,.15);border:1px solid rgba(212,80,80,.4);color:var(--red)}
+.btn-danger:hover{background:rgba(212,80,80,.25)}
+.btn-amber{background:rgba(232,196,74,.12);border:1px solid rgba(232,196,74,.4);color:var(--amber)}
+.btn-amber:hover{background:rgba(232,196,74,.22)}
+.btn-blue{background:rgba(80,144,212,.12);border:1px solid rgba(80,144,212,.4);color:var(--blue2)}
+.btn-blue:hover{background:rgba(80,144,212,.22)}
+.btn-sm{padding:7px 14px;font-size:.83rem}
+.btn-full{width:100%}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none!important}
+.btn-nav{padding:8px 12px;font-size:.8rem;font-weight:500;border-radius:var(--radius-sm);border:none;cursor:pointer;font-family:var(--font-body);transition:var(--transition)}
+.btn-nav.active{background:rgba(122,180,80,.18);color:var(--green2)}
+.btn-nav:not(.active){background:transparent;color:var(--text3)}
+.btn-nav:not(.active):hover{color:var(--text);background:rgba(255,255,255,.04)}
+.link-btn{background:none;border:none;color:var(--green2);cursor:pointer;font-family:var(--font-body);font-size:.9rem;text-decoration:underline;text-underline-offset:3px}
+.link-btn:hover{color:var(--green3)}
+
+.step-hint{text-align:center;margin-top:18px;font-size:.85rem;color:var(--text3)}
+.error-msg{background:rgba(212,80,80,.12);border:1px solid rgba(212,80,80,.35);color:#f08080;border-radius:var(--radius-sm);padding:10px 14px;font-size:.88rem;margin-bottom:14px;display:none}
+.error-msg.show{display:block}
+.info-banner{background:rgba(122,180,80,.07);border:1px solid rgba(122,180,80,.2);border-radius:var(--radius-sm);padding:10px 14px;font-size:.83rem;color:var(--text2);margin-bottom:16px;display:flex;gap:8px;align-items:flex-start}
+.info-banner .ico{color:var(--green2);flex-shrink:0;margin-top:1px}
+.steps-indicator{display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:28px}
+.step-dot{width:8px;height:8px;border-radius:50%;background:var(--bg3);transition:var(--transition)}
+.step-dot.active{background:var(--green);width:20px;border-radius:4px}
+.step-dot.done{background:var(--green2)}
+.tabs{display:flex;gap:4px;background:var(--bg2);border-radius:var(--radius-sm);padding:4px;margin-bottom:20px}
+.tab-btn{flex:1;padding:8px;border-radius:6px;border:none;background:transparent;color:var(--text3);font-family:var(--font-body);font-size:.85rem;cursor:pointer;transition:var(--transition);font-weight:500}
+.tab-btn.active{background:var(--panel);color:var(--text);border:1px solid var(--border)}
+.divider{border:none;border-top:1px solid var(--border);margin:18px 0}
+
+/* ── MAIN APP ── */
+#main-app{display:flex;flex-direction:column;min-height:100dvh}
+.topbar{position:sticky;top:0;z-index:100;background:rgba(13,31,13,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 16px;height:60px;display:flex;align-items:center;justify-content:space-between}
+.topbar-left{display:flex;align-items:center;gap:10px}
+.topbar-logo{font-family:var(--font-head);font-size:1.2rem;color:var(--green3);font-weight:700;white-space:nowrap}
+.topbar-badge{background:var(--bg3);border:1px solid var(--border);border-radius:99px;padding:2px 10px;font-size:.7rem;color:var(--text3);letter-spacing:.04em}
+.topbar-badge.admin{border-color:rgba(232,196,74,.4);color:var(--amber);background:rgba(232,196,74,.08)}
+.topbar-badge.moderator{border-color:rgba(80,144,212,.4);color:var(--blue2);background:rgba(80,144,212,.08)}
+.topbar-right{display:flex;align-items:center;gap:6px}
+.avatar-btn{width:34px;height:34px;background:linear-gradient(135deg,var(--green),var(--green2));border-radius:50%;border:none;cursor:pointer;font-size:.82rem;font-weight:700;color:#0d1f0d;font-family:var(--font-body);display:flex;align-items:center;justify-content:center;transition:var(--transition)}
+.avatar-btn:hover{transform:scale(1.08)}
+.navbar{display:flex;align-items:center;gap:2px}
+.main-content{flex:1;padding:20px;max-width:800px;margin:0 auto;width:100%}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px}
+.page-title{font-family:var(--font-head);font-size:1.7rem;color:var(--green3)}
+
+/* ── FEED ── */
+.feed{display:flex;flex-direction:column;gap:16px}
+.post-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow-sm);transition:var(--transition);animation:slideUp .35s ease}
+.post-card:hover{border-color:var(--border2)}
+.post-card.event{border-left:3px solid var(--green)}
+.post-card.announcement{border-left:3px solid var(--amber)}
+.post-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
+.post-meta{display:flex;flex-direction:column;gap:3px}
+.post-type-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.badge-event{background:rgba(122,180,80,.15);color:var(--green2);border:1px solid rgba(122,180,80,.3)}
+.badge-post{background:rgba(232,196,74,.1);color:var(--amber);border:1px solid rgba(232,196,74,.25)}
+.post-title{font-family:var(--font-head);font-size:1.15rem;color:var(--text)}
+.post-date{font-size:.78rem;color:var(--text3)}
+.post-actions-top{display:flex;gap:6px;flex-shrink:0}
+.post-body{font-size:.92rem;color:var(--text2);margin-bottom:14px;line-height:1.65;white-space:pre-wrap}
+.event-details{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:14px;display:grid;gap:8px}
+.event-detail-row{display:flex;align-items:center;gap:10px;font-size:.88rem}
+.event-detail-row .icon{width:20px;text-align:center;color:var(--green2);flex-shrink:0}
+.event-detail-row .val{color:var(--text2)}
+.nav-link-btn{display:inline-flex;align-items:center;gap:8px;padding:9px 16px;background:rgba(122,180,80,.12);border:1px solid rgba(122,180,80,.35);border-radius:var(--radius-sm);color:var(--green2);font-family:var(--font-body);font-size:.88rem;font-weight:600;text-decoration:none;cursor:pointer;transition:var(--transition);margin-bottom:14px}
+.nav-link-btn:hover{background:rgba(122,180,80,.22)}
+.capacity-section{margin-bottom:14px}
+.capacity-title{font-size:.8rem;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;font-weight:500}
+.capacity-grid{display:grid;gap:8px}
+.capacity-row{display:flex;align-items:center;gap:10px}
+.cap-label{font-size:.82rem;color:var(--text2);min-width:90px;flex-shrink:0}
+.cap-bar-wrap{flex:1;background:var(--bg2);border-radius:99px;height:6px;overflow:hidden}
+.cap-bar{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--green),var(--green2));transition:width .4s ease}
+.cap-bar.full{background:linear-gradient(90deg,var(--red),#e88080)}
+.cap-count{font-size:.8rem;color:var(--text3);min-width:42px;text-align:right;flex-shrink:0}
+.post-footer{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
+.attend-btn{min-width:150px}
+.attend-btn.attending{background:rgba(122,180,80,.12);border:1px solid rgba(122,180,80,.4);color:var(--green2);padding:8px 16px;border-radius:var(--radius-sm);font-family:var(--font-body);font-size:.88rem;font-weight:600;cursor:default}
+.attend-btn.full{background:rgba(80,80,80,.12);border:1px solid rgba(120,120,120,.3);color:var(--text3);padding:8px 16px;border-radius:var(--radius-sm);font-family:var(--font-body);font-size:.88rem;cursor:not-allowed}
+.participants-list{margin-top:10px}
+.participants-title{font-size:.78rem;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.participant-chip{display:inline-flex;align-items:center;gap:5px;background:var(--bg3);border:1px solid var(--border);border-radius:99px;padding:3px 9px;font-size:.78rem;color:var(--text2);margin:3px}
+.chip-role{font-size:.7rem;color:var(--text3)}
+
+/* ── COMMENTS ── */
+.comments-section{margin-top:16px;border-top:1px solid var(--border);padding-top:14px}
+.comments-title{font-size:.8rem;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;font-weight:500}
+.comment-list{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.comment-item{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px}
+.comment-meta{font-size:.75rem;color:var(--text3);margin-bottom:3px}
+.comment-meta strong{color:var(--green2)}
+.comment-text{font-size:.87rem;color:var(--text2)}
+.comment-form{display:flex;gap:8px;align-items:flex-end}
+.comment-input{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;color:var(--text);font-family:var(--font-body);font-size:.88rem;outline:none;transition:var(--transition);resize:none}
+.comment-input:focus{border-color:var(--green);box-shadow:0 0 0 2px rgba(122,180,80,.1)}
+.comment-chars{font-size:.75rem;color:var(--text3);white-space:nowrap;align-self:center}
+
+/* ── ADMIN FORM ── */
+.admin-form-card{background:var(--panel);border:1px solid var(--border2);border-radius:var(--radius);padding:24px;margin-bottom:24px;box-shadow:var(--shadow)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.cap-inputs{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+
+/* ── SETTINGS / PROFILE ── */
+.settings-section{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;margin-bottom:16px}
+.settings-section-title{font-family:var(--font-head);font-size:1rem;color:var(--green2);margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;gap:12px}
+.toggle-label{font-size:.9rem;color:var(--text2)}
+.toggle-label small{display:block;font-size:.78rem;color:var(--text3);margin-top:2px}
+.toggle{position:relative;width:44px;height:24px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;background:var(--bg3);border-radius:24px;cursor:pointer;transition:var(--transition);border:1px solid var(--border)}
+.toggle-slider::before{content:'';position:absolute;left:3px;top:3px;width:16px;height:16px;background:var(--text3);border-radius:50%;transition:var(--transition)}
+.toggle input:checked+.toggle-slider{background:rgba(122,180,80,.2);border-color:var(--green)}
+.toggle input:checked+.toggle-slider::before{transform:translateX(20px);background:var(--green2)}
+.notif-districts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.notif-district-row{display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--text2)}
+.notif-district-row input[type=checkbox]{accent-color:var(--green);width:15px;height:15px}
+.profile-header-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:24px;display:flex;align-items:center;gap:18px;margin-bottom:20px}
+.profile-avatar{width:64px;height:64px;min-width:64px;background:linear-gradient(135deg,var(--green),var(--green2));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.6rem;font-weight:700;color:#0d1f0d;font-family:var(--font-body)}
+.profile-info .pname{font-family:var(--font-head);font-size:1.3rem;color:var(--text)}
+.profile-info .pmeta{font-size:.85rem;color:var(--text3);margin-top:4px}
+
+/* ── USER LIST (moderator/admin) ── */
+.user-table{width:100%;border-collapse:collapse}
+.user-table th{text-align:left;font-size:.75rem;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;padding:8px 12px;border-bottom:1px solid var(--border);font-weight:500}
+.user-table td{padding:10px 12px;border-bottom:1px solid rgba(120,180,80,.08);font-size:.88rem;color:var(--text2);vertical-align:middle}
+.user-table tr:last-child td{border-bottom:none}
+.user-table tr:hover td{background:rgba(122,180,80,.04)}
+.user-actions{display:flex;gap:6px;flex-wrap:wrap}
+.timeout-badge{background:rgba(212,80,80,.15);border:1px solid rgba(212,80,80,.3);color:var(--red);border-radius:99px;padding:2px 8px;font-size:.72rem}
+
+/* ── CONTACTS / FARMERS DB ── */
+.contact-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow-sm);animation:slideUp .3s ease;transition:var(--transition)}
+.contact-card:hover{border-color:var(--border2)}
+.contact-header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px}
+.contact-name{font-family:var(--font-head);font-size:1.05rem;color:var(--text)}
+.contact-meta{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.contact-chip{display:inline-flex;align-items:center;gap:5px;background:var(--bg3);border:1px solid var(--border);border-radius:99px;padding:3px 10px;font-size:.78rem;color:var(--text2)}
+.contact-note{font-size:.87rem;color:var(--text3);font-style:italic;border-left:2px solid var(--border2);padding-left:10px;margin-top:8px}
+.contact-actions{display:flex;gap:6px;flex-shrink:0}
+.star-badge{background:rgba(232,196,74,.1);border:1px solid rgba(232,196,74,.3);color:var(--amber);border-radius:99px;padding:2px 8px;font-size:.72rem}
+.contacts-grid{display:flex;flex-direction:column;gap:12px}
+.search-bar{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;color:var(--text);font-family:var(--font-body);font-size:.92rem;outline:none;transition:var(--transition);width:100%}
+.search-bar:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(122,180,80,.1)}
+
+/* ── LINKS / GUIDES PAGE ── */
+.links-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.link-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:18px;text-decoration:none;transition:var(--transition);display:flex;flex-direction:column;gap:8px}
+.link-card:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:var(--shadow)}
+.link-card-icon{font-size:1.8rem}
+.link-card-title{font-weight:600;font-size:.95rem;color:var(--text)}
+.link-card-desc{font-size:.8rem;color:var(--text3);line-height:1.5}
+.link-card.social:hover{border-color:rgba(122,180,80,.5)}
+.section-label{font-size:.78rem;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin:20px 0 10px}
+
+/* ── TOAST ── */
+#toast-container{position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+.toast{background:var(--panel);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:12px 18px;font-size:.88rem;color:var(--text);box-shadow:var(--shadow);animation:toastIn .3s ease;max-width:300px;display:flex;align-items:center;gap:10px}
+.toast.success{border-color:rgba(122,180,80,.5)}
+.toast.error{border-color:rgba(212,80,80,.5);color:#f08080}
+.toast.info{border-color:rgba(232,196,74,.4);color:var(--amber2)}
+@keyframes toastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn .2s ease}
+.modal{background:var(--panel);border:1px solid var(--border2);border-radius:var(--radius);padding:26px 24px;width:100%;max-width:520px;max-height:90dvh;overflow-y:auto;box-shadow:var(--shadow);animation:modalIn .25s ease}
+@keyframes modalIn{from{opacity:0;transform:scale(.95) translateY(10px)}to{opacity:1;transform:none}}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.modal-title{font-family:var(--font-head);font-size:1.2rem;color:var(--green3)}
+.modal-close{background:none;border:none;color:var(--text3);cursor:pointer;font-size:1.2rem;padding:4px;border-radius:4px;transition:var(--transition)}
+.modal-close:hover{color:var(--text);background:var(--bg3)}
+.modal-footer{display:flex;gap:10px;margin-top:20px;justify-content:flex-end}
+
+.empty-state{text-align:center;padding:48px 20px;color:var(--text3)}
+.empty-state .icon{font-size:2.5rem;margin-bottom:14px;opacity:.5}
+.empty-state p{font-size:.92rem}
+
+@media(max-width:600px){
+  .topbar{padding:0 12px}
+  .main-content{padding:12px}
+  .page-title{font-size:1.4rem}
+  .card{padding:20px 16px}
+  .admin-form-card{padding:18px 14px}
+  .navbar{gap:0}
+  .btn-nav{padding:6px 8px;font-size:.75rem}
+  .topbar-logo{font-size:1.05rem}
+  .form-row{grid-template-columns:1fr}
+  .cap-inputs{grid-template-columns:1fr 1fr}
+  .links-grid{grid-template-columns:1fr}
+  .user-table td,.user-table th{padding:8px 8px;font-size:.8rem}
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ══ SCREEN: ROLE ══ -->
+<div id="screen-role" class="screen hidden">
+  <div class="logo-block">
+    <div class="logo-icon">🦌</div>
+    <div class="logo-title">FawnGuard</div>
+    <div class="logo-sub">Ochrana srnčat při sečení</div>
+  </div>
+  <div class="card">
+    <div class="steps-indicator">
+      <div class="step-dot active"></div><div class="step-dot"></div><div class="step-dot"></div>
+    </div>
+    <div class="card-title">Kdo jsi?</div>
+    <div class="role-grid">
+      <button class="role-btn" data-role="pilot" onclick="selectOnboardRole(this)">
+        <span class="ri">🚁</span><div><div class="rl">Pilot</div><div class="rd">Provozuji dron, vedu záchranné přelety</div></div>
+      </button>
+      <button class="role-btn" data-role="dobrovolnik" onclick="selectOnboardRole(this)">
+        <span class="ri">🤝</span><div><div class="rl">Dobrovolník</div><div class="rd">Pomáhám při záchranných akcích</div></div>
+      </button>
+      <button class="role-btn" data-role="zacatecnik" onclick="selectOnboardRole(this)">
+        <span class="ri">🌱</span><div><div class="rl">Začátečník</div><div class="rd">Teprve začínám, chci se zapojit</div></div>
+      </button>
+    </div>
+    <div class="step-hint">Lze změnit v nastavení</div>
+  </div>
+</div>
+
+<!-- ══ SCREEN: DISTRICT ══ -->
+<div id="screen-district" class="screen hidden">
+  <div class="logo-block"><div class="logo-icon">🦌</div><div class="logo-title">FawnGuard</div></div>
+  <div class="card">
+    <div class="steps-indicator">
+      <div class="step-dot done"></div><div class="step-dot active"></div><div class="step-dot"></div>
+    </div>
+    <div class="card-title">Tvůj okres</div>
+    <div class="district-grid">
+      <button class="dist-btn" data-dist="Plzeň-město"  onclick="selectOnboardDistrict(this)">Plzeň-město</button>
+      <button class="dist-btn" data-dist="Plzeň-jih"    onclick="selectOnboardDistrict(this)">Plzeň-jih</button>
+      <button class="dist-btn" data-dist="Plzeň-sever"  onclick="selectOnboardDistrict(this)">Plzeň-sever</button>
+      <button class="dist-btn" data-dist="Domažlice"    onclick="selectOnboardDistrict(this)">Domažlice</button>
+      <button class="dist-btn" data-dist="Klatovy"      onclick="selectOnboardDistrict(this)">Klatovy</button>
+      <button class="dist-btn" data-dist="Tachov"       onclick="selectOnboardDistrict(this)">Tachov</button>
+      <button class="dist-btn" data-dist="Rokycany"     onclick="selectOnboardDistrict(this)">Rokycany</button>
+    </div>
+    <div class="step-hint">Lze změnit v nastavení</div>
+  </div>
+</div>
+
+<!-- ══ SCREEN: AUTH ══ -->
+<div id="screen-auth" class="screen hidden">
+  <div class="logo-block">
+    <div class="logo-icon">🦌</div><div class="logo-title">FawnGuard</div>
+    <div class="logo-sub">Ochrana srnčat při sečení</div>
+  </div>
+  <div class="card">
+    <div class="steps-indicator">
+      <div class="step-dot done"></div><div class="step-dot done"></div><div class="step-dot active"></div>
+    </div>
+    <div class="tabs">
+      <button class="tab-btn active" id="tab-login" onclick="switchAuthTab('login')">Přihlásit se</button>
+      <button class="tab-btn"        id="tab-reg"   onclick="switchAuthTab('reg')">Registrovat se</button>
+    </div>
+    <div id="auth-login">
+      <div class="error-msg" id="login-error"></div>
+      <div class="form-group"><label>Uživatelské jméno</label><input type="text" id="login-username" placeholder="jméno" autocomplete="username"></div>
+      <div class="form-group"><label>Heslo</label><input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password"></div>
+      <button class="btn btn-primary" onclick="doLogin()">Přihlásit se</button>
+    </div>
+    <div id="auth-reg" class="hidden">
+      <div class="info-banner"><span class="ico">ℹ️</span><span>Registrace uloží tvůj výběr role a okresu.</span></div>
+      <div class="error-msg" id="reg-error"></div>
+      <div class="form-group"><label>Uživatelské jméno</label><input type="text" id="reg-username" placeholder="unikátní jméno" autocomplete="username"></div>
+      <div class="form-group"><label>Heslo</label><input type="password" id="reg-password" placeholder="min. 5 znaků" autocomplete="new-password"></div>
+      <div class="form-group"><label>Potvrzení hesla</label><input type="password" id="reg-password2" placeholder="zopakuj heslo" autocomplete="new-password"></div>
+      <button class="btn btn-primary" onclick="doRegister()">Vytvořit účet</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MAIN APP ══ -->
+<div id="main-app" class="hidden">
+  <header class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-logo">🦌 FawnGuard</span>
+      <span class="topbar-badge" id="topbar-role-badge"></span>
+    </div>
+    <div class="topbar-right">
+      <nav class="navbar" id="main-nav">
+        <button class="btn-nav active" data-page="feed"     onclick="navTo('feed')">Nástěnka</button>
+        <button class="btn-nav"        data-page="contacts" onclick="navTo('contacts')">Adresář</button>
+        <button class="btn-nav"        data-page="linkspage"onclick="navTo('linkspage')">Návody</button>
+        <button class="btn-nav"        data-page="users"    onclick="navTo('users')" id="nav-users" style="display:none">Členové</button>
+        <button class="btn-nav"        data-page="profile"  onclick="navTo('profile')">Profil</button>
+        <button class="btn-nav"        data-page="settings" onclick="navTo('settings')">⚙</button>
+      </nav>
+      <button class="avatar-btn" id="topbar-avatar" onclick="navTo('profile')">?</button>
+    </div>
+  </header>
+
+  <!-- ── PAGE: FEED ── -->
+  <div id="page-feed" class="main-content">
+    <div class="page-header"><h1 class="page-title">Nástěnka</h1></div>
+    <div id="admin-create-section" class="hidden">
+      <div class="admin-form-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+          <span class="modal-title" id="admin-form-title-label">Nový příspěvek / Akce</span>
+        </div>
+        <div class="tabs">
+          <button class="tab-btn active" id="tab-create-event" onclick="switchCreateTab('event')">📅 Akce</button>
+          <button class="tab-btn"        id="tab-create-post"  onclick="switchCreateTab('post')">📢 Příspěvek</button>
+        </div>
+        <div id="form-error" class="error-msg"></div>
+        <div class="form-group"><label>Název / Nadpis</label><input type="text" id="cf-title" placeholder="Záchranná akce – Klatovy..."></div>
+        <div class="form-group"><label>Popis</label><textarea id="cf-body" rows="3" placeholder="Detaily akce nebo příspěvku..."></textarea></div>
+        <div id="event-fields">
+          <div class="form-row">
+            <div class="form-group"><label>Datum</label><input type="date" id="cf-date"></div>
+            <div class="form-group"><label>Čas srazu</label><input type="time" id="cf-time"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Název lokace</label><input type="text" id="cf-location" placeholder="Louka u Štěnovic"></div>
+            <div class="form-group"><label>Okres</label>
+              <select id="cf-district">
+                <option value="">-- vyber okres --</option>
+                <option>Plzeň-město</option><option>Plzeň-jih</option><option>Plzeň-sever</option>
+                <option>Domažlice</option><option>Klatovy</option><option>Tachov</option><option>Rokycany</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group"><label>Odkaz na Mapy.cz (špendlík)</label><input type="url" id="cf-mapurl" placeholder="https://mapy.cz/s/..."></div>
+          <div class="form-group">
+            <label>Kapacita rolí</label>
+            <div class="cap-inputs">
+              <div><label style="font-size:.78rem;color:var(--text3);margin-bottom:4px;display:block">🚁 Piloti</label><input type="number" id="cf-cap-pilot" min="0" value="5"></div>
+              <div><label style="font-size:.78rem;color:var(--text3);margin-bottom:4px;display:block">🤝 Dobrovolníci</label><input type="number" id="cf-cap-dobro" min="0" value="10"></div>
+              <div><label style="font-size:.78rem;color:var(--text3);margin-bottom:4px;display:block">🌱 Začátečníci</label><input type="number" id="cf-cap-zac" min="0" value="5"></div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-primary" id="cf-submit-btn" onclick="submitPost()" style="flex:1;min-width:120px">Zveřejnit</button>
+          <button class="btn btn-secondary" id="cf-cancel-edit" onclick="cancelEdit()" style="display:none">Zrušit úpravy</button>
+        </div>
+      </div>
+    </div>
+    <div id="feed-list" class="feed"></div>
+  </div>
+
+  <!-- ── PAGE: CONTACTS ── -->
+  <div id="page-contacts" class="main-content hidden">
+    <div class="page-header">
+      <h1 class="page-title">🚜 Adresář</h1>
+      <button class="btn btn-primary btn-sm" id="btn-add-contact" onclick="openContactModal()" style="display:none;width:auto">+ Přidat</button>
+    </div>
+    <div class="form-group" style="margin-bottom:16px">
+      <input type="text" class="search-bar" id="contact-search" placeholder="🔍 Hledat jméno, okres, poznámku…" oninput="renderContacts()">
+    </div>
+    <div id="contacts-list" class="contacts-grid"></div>
+  </div>
+
+  <!-- ── PAGE: LINKS / GUIDES ── -->
+  <div id="page-linkspage" class="main-content hidden">
+    <div class="page-header"><h1 class="page-title">📚 Návody & Odkazy</h1></div>
+    <div class="section-label">Sociální sítě spolku</div>
+    <div class="links-grid">
+      <a href="https://www.instagram.com/" target="_blank" class="link-card social">
+        <div class="link-card-icon">📸</div>
+        <div class="link-card-title">Instagram</div>
+        <div class="link-card-desc">Sleduj nás na Instagramu – fotky z akcí a aktuality</div>
+      </a>
+      <a href="https://www.facebook.com/" target="_blank" class="link-card social">
+        <div class="link-card-icon">👍</div>
+        <div class="link-card-title">Facebook</div>
+        <div class="link-card-desc">Skupiny a události spolku na Facebooku</div>
+      </a>
+      <a href="https://wa.me/" target="_blank" class="link-card social">
+        <div class="link-card-icon">💬</div>
+        <div class="link-card-title">WhatsApp skupina</div>
+        <div class="link-card-desc">Přidej se do operativní skupiny dobrovolníků</div>
+      </a>
+      <a href="https://www.youtube.com/" target="_blank" class="link-card social">
+        <div class="link-card-icon">▶️</div>
+        <div class="link-card-title">YouTube</div>
+        <div class="link-card-desc">Videa ze záchranných akcí a záznamy přeletů</div>
+      </a>
+    </div>
+    <div class="section-label">Jak se zapojit</div>
+    <div class="links-grid">
+      <a href="#" onclick="showGuide('jak-zacit');return false" class="link-card">
+        <div class="link-card-icon">🦌</div>
+        <div class="link-card-title">Jak začít jako dobrovolník</div>
+        <div class="link-card-desc">Postup registrace, co s sebou na akci, jak to funguje</div>
+      </a>
+      <a href="#" onclick="showGuide('pilot-license');return false" class="link-card">
+        <div class="link-card-icon">🚁</div>
+        <div class="link-card-title">Průkaz pilota dronu</div>
+        <div class="link-card-desc">Jak získat oprávnění A1/A3 a A2, kde složit zkoušku CAA</div>
+      </a>
+      <a href="#" onclick="showGuide('thermal');return false" class="link-card">
+        <div class="link-card-icon">🌡️</div>
+        <div class="link-card-title">Termovize a záchrana srnčat</div>
+        <div class="link-card-desc">Jak funguje noční přelet, co hledat v termokameře</div>
+      </a>
+      <a href="https://www.caa.cz/" target="_blank" class="link-card">
+        <div class="link-card-icon">🏛️</div>
+        <div class="link-card-title">Úřad pro civilní letectví (CAA)</div>
+        <div class="link-card-desc">Legislativa pro provoz dronů v ČR</div>
+      </a>
+      <a href="https://mapy.cz/" target="_blank" class="link-card">
+        <div class="link-card-icon">🗺️</div>
+        <div class="link-card-title">Mapy.cz</div>
+        <div class="link-card-desc">Plánování tras a sdílení polohy akcí</div>
+      </a>
+      <a href="https://www.myslivost.cz/" target="_blank" class="link-card">
+        <div class="link-card-icon">🌿</div>
+        <div class="link-card-title">Myslivost.cz</div>
+        <div class="link-card-desc">Informace o myslivosti a ochraně zvěře v ČR</div>
+      </a>
+    </div>
+  </div>
+
+  <!-- ── PAGE: USERS (moderator/admin) ── -->
+  <div id="page-users" class="main-content hidden">
+    <div class="page-header"><h1 class="page-title">👥 Členové</h1></div>
+    <div class="settings-section">
+      <div class="settings-section-title">Seznam registrovaných uživatelů</div>
+      <div style="overflow-x:auto">
+        <table class="user-table" id="users-table">
+          <thead>
+            <tr>
+              <th>Uživatel</th><th>Role</th><th>Okres</th><th>Stav</th><th id="user-actions-header"></th>
+            </tr>
+          </thead>
+          <tbody id="users-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PAGE: PROFILE ── -->
+  <div id="page-profile" class="main-content hidden">
+    <div class="page-header"><h1 class="page-title">Profil</h1></div>
+    <div class="profile-header-card">
+      <div class="profile-avatar" id="prof-avatar">?</div>
+      <div class="profile-info">
+        <div class="pname" id="prof-name">—</div>
+        <div class="pmeta" id="prof-meta">—</div>
+      </div>
+    </div>
+    <div class="settings-section">
+      <div class="settings-section-title">Upravit profil</div>
+      <div class="form-group"><label>Moje role</label>
+        <select id="prof-role-sel">
+          <option value="pilot">🚁 Pilot</option>
+          <option value="dobrovolnik">🤝 Dobrovolník</option>
+          <option value="zacatecnik">🌱 Začátečník</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Můj okres</label>
+        <select id="prof-district-sel">
+          <option>Plzeň-město</option><option>Plzeň-jih</option><option>Plzeň-sever</option>
+          <option>Domažlice</option><option>Klatovy</option><option>Tachov</option><option>Rokycany</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" onclick="saveProfile()" style="max-width:200px">Uložit změny</button>
+    </div>
+    <div class="settings-section">
+      <div class="settings-section-title">Bezpečnost</div>
+      <button class="btn btn-danger btn-sm" onclick="doLogout()">Odhlásit se</button>
+    </div>
+  </div>
+
+  <!-- ── PAGE: SETTINGS ── -->
+  <div id="page-settings" class="main-content hidden">
+    <div class="page-header"><h1 class="page-title">Nastavení</h1></div>
+    <div class="settings-section">
+      <div class="settings-section-title">🔔 Správa upozornění</div>
+      <div class="toggle-row">
+        <div class="toggle-label">Zapnout všechna oznámení<small>Dostaneš oznámení o každé nové akci v ČR</small></div>
+        <label class="toggle"><input type="checkbox" id="notif-all" onchange="saveNotifSettings()"><span class="toggle-slider"></span></label>
+      </div>
+      <hr class="divider">
+      <div style="font-size:.82rem;color:var(--text3);margin-bottom:10px">Nebo vyber konkrétní okresy:</div>
+      <div class="notif-districts" id="notif-districts-list"></div>
+    </div>
+  </div>
+
+</div><!-- /main-app -->
+</div><!-- /app -->
+
+<div id="toast-container"></div>
+
+<!-- MODAL -->
+<div id="modal-overlay" class="modal-overlay hidden" onclick="overlayClose(event)">
+  <div class="modal" id="modal-box">
+    <div class="modal-header">
+      <span class="modal-title" id="modal-title-text">—</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+
+/* ═══════════════════════════════════
+   CONFIG – admins / moderators
+   ═══════════════════════════════════ */
+const ADMINS     = ['admin','jan_admin'];       // ← uživatelská jména adminů
+const MODERATORS = ['moderator','jakub'];       // ← uživatelská jména moderátorů (tvoje jméno zde)
+
+/* ═══════════════════════════════════
+   CONSTANTS
+   ═══════════════════════════════════ */
+const DISTRICTS = ['Plzeň-město','Plzeň-jih','Plzeň-sever','Domažlice','Klatovy','Tachov','Rokycany'];
+const ROLE_LABELS = {pilot:'🚁 Pilot',dobrovolnik:'🤝 Dobrovolník',zacatecnik:'🌱 Začátečník',admin:'⭐ Admin',moderator:'🛡️ Moderátor'};
+const TIMEOUT_DURATION = 24 * 60 * 60 * 1000; // 24 hodin v ms
+
+/* ═══════════════════════════════════
+   STATE
+   ═══════════════════════════════════ */
+let onboard = {role:null,district:null};
+let currentUser = null;
+let editingPostId = null;
+let createType = 'event';
+let editingContactId = null;
+
+/* ═══════════════════════════════════
+   LS HELPERS
+   ═══════════════════════════════════ */
+const LS = {
+  get: k   => { try{return JSON.parse(localStorage.getItem(k))}catch{return null} },
+  set: (k,v) => localStorage.setItem(k,JSON.stringify(v)),
+  del: k   => localStorage.removeItem(k),
+};
+function getUsers()  { return LS.get('fg_users')    || {} }
+function saveUsers(u){ LS.set('fg_users',u) }
+function getUser(n)  { return getUsers()[n] || null }
+function getPosts()  { return LS.get('fg_posts')    || [] }
+function savePosts(p){ LS.set('fg_posts',p) }
+function getContacts(){ return LS.get('fg_contacts') || [] }
+function saveContacts(c){ LS.set('fg_contacts',c) }
+
+/* ═══════════════════════════════════
+   UTILS
+   ═══════════════════════════════════ */
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7) }
+function fmtDate(d){ if(!d)return''; return new Date(d+'T00:00:00').toLocaleDateString('cs-CZ') }
+function fmtTs(ts){ return new Date(ts).toLocaleString('cs-CZ',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) }
+function escHtml(s){ if(!s)return''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }
+function getRoleLabel(r){ return ROLE_LABELS[r]||r }
+function getSystemRole(u){ if(ADMINS.includes(u))return'admin'; if(MODERATORS.includes(u))return'moderator'; return null }
+function isAdmin(u){ return (u||currentUser).systemRole==='admin' }
+function isModerator(u){ return (u||currentUser).systemRole==='moderator' }
+function isPrivileged(u){ const usr=u||currentUser; return usr.systemRole==='admin'||usr.systemRole==='moderator' }
+function simpleHash(s){ let h=0x12345678; for(let i=0;i<s.length;i++){h=Math.imul(h^s.charCodeAt(i),0x9e3779b9);h=(h<<13)|(h>>>19)} return(h>>>0).toString(16) }
+function showErr(el,msg){ el.textContent=msg; el.classList.add('show') }
+
+/* ═══════════════════════════════════
+   AUTO-CLEANUP: delete events older than 7 days
+   ═══════════════════════════════════ */
+function vycistitStareAkce(){
+  const now = Date.now();
+  const sevenDays = 7*24*60*60*1000;
+  const posts = getPosts();
+  const filtered = posts.filter(p => {
+    if(p.type !== 'event') return true; // příspěvky (announcements) nemažeme
+    if(!p.date) return true;
+    const eventTime = new Date(p.date+'T23:59:59').getTime();
+    return (now - eventTime) < sevenDays;
+  });
+  if(filtered.length < posts.length){
+    savePosts(filtered);
+    console.log(`FawnGuard: vyčištěno ${posts.length - filtered.length} starých akcí`);
+  }
+}
+
+/* ═══════════════════════════════════
+   BOOT
+   ═══════════════════════════════════ */
+function boot(){
+  vycistitStareAkce();
+  const session = LS.get('fg_session');
+  if(session){
+    const u = getUser(session);
+    if(u){
+      // Check if user is timed out
+      if(u.timeoutUntil && Date.now() < u.timeoutUntil){
+        showToast('Tvůj účet je dočasně omezen. Kontaktuj moderátora.','error');
+        LS.del('fg_session');
+      } else {
+        u.systemRole = getSystemRole(u.username);
+        currentUser = u;
+        showMainApp();
+        return;
+      }
+    } else { LS.del('fg_session') }
+  }
+  showScreen('screen-role');
+}
+
+function showScreen(id){
+  ['screen-role','screen-district','screen-auth','main-app'].forEach(s=>{
+    document.getElementById(s).classList.toggle('hidden',s!==id);
+  });
+}
+function showMainApp(){
+  showScreen('main-app');
+  // Show/hide privileged nav items
+  const usersBtn = document.getElementById('nav-users');
+  if(isPrivileged()) usersBtn.style.display='';
+  else usersBtn.style.display='none';
+  updateTopbar();
+  navTo('feed');
+  buildNotifSettings();
+}
+
+/* ═══════════════════════════════════
+   ONBOARDING
+   ═══════════════════════════════════ */
+function selectOnboardRole(btn){
+  document.querySelectorAll('#screen-role .role-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+  onboard.role = btn.dataset.role;
+  setTimeout(()=>showScreen('screen-district'),280);
+}
+function selectOnboardDistrict(btn){
+  document.querySelectorAll('#screen-district .dist-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+  onboard.district = btn.dataset.dist;
+  setTimeout(()=>showScreen('screen-auth'),280);
+}
+
+/* ═══════════════════════════════════
+   AUTH
+   ═══════════════════════════════════ */
+function switchAuthTab(tab){
+  document.getElementById('auth-login').classList.toggle('hidden',tab!=='login');
+  document.getElementById('auth-reg').classList.toggle('hidden',tab!=='reg');
+  document.getElementById('tab-login').classList.toggle('active',tab==='login');
+  document.getElementById('tab-reg').classList.toggle('active',tab==='reg');
+}
+function doLogin(){
+  const err = document.getElementById('login-error'); err.classList.remove('show');
+  const username = document.getElementById('login-username').value.trim().toLowerCase();
+  const pw = document.getElementById('login-password').value;
+  const user = getUser(username);
+  if(!user||user.passwordHash!==simpleHash(pw)) return showErr(err,'Nesprávné jméno nebo heslo.');
+  if(user.timeoutUntil && Date.now()<user.timeoutUntil){
+    const until = new Date(user.timeoutUntil).toLocaleString('cs-CZ');
+    return showErr(err,`Účet je dočasně omezen do ${until}. Kontaktuj moderátora.`);
+  }
+  user.systemRole = getSystemRole(username);
+  const users = getUsers(); users[username]=user; saveUsers(users);
+  currentUser = user;
+  LS.set('fg_session',username);
+  showToast('Přihlášení úspěšné! 🦌','success');
+  showMainApp();
+}
+function doRegister(){
+  const err = document.getElementById('reg-error'); err.classList.remove('show');
+  const username = document.getElementById('reg-username').value.trim().toLowerCase();
+  const pw  = document.getElementById('reg-password').value;
+  const pw2 = document.getElementById('reg-password2').value;
+  if(!username||username.length<3) return showErr(err,'Jméno musí mít alespoň 3 znaky.');
+  if(!/^[a-z0-9_]+$/.test(username)) return showErr(err,'Jméno smí obsahovat jen písmena, číslice a _.');
+  if(pw.length<5) return showErr(err,'Heslo musí mít alespoň 5 znaků.');
+  if(pw!==pw2) return showErr(err,'Hesla se neshodují.');
+  if(!onboard.role||!onboard.district) return showErr(err,'Vrať se a zvol roli a okres.');
+  const users = getUsers();
+  if(users[username]) return showErr(err,'Toto uživatelské jméno je již obsazeno.');
+  const sysRole = getSystemRole(username);
+  users[username] = {username,passwordHash:simpleHash(pw),role:onboard.role,district:onboard.district,systemRole:sysRole,notifAll:false,notifDistricts:[],createdAt:Date.now()};
+  saveUsers(users);
+  currentUser = users[username];
+  LS.set('fg_session',username);
+  showToast('Vítej, '+username+'! 🦌','success');
+  showMainApp();
+}
+function doLogout(){
+  LS.del('fg_session'); currentUser=null; onboard={role:null,district:null};
+  document.querySelectorAll('.role-btn,.dist-btn').forEach(b=>b.classList.remove('selected'));
+  showScreen('screen-role');
+  showToast('Odhlášen/a.','info');
+}
+
+/* ═══════════════════════════════════
+   TOPBAR / NAV
+   ═══════════════════════════════════ */
+function updateTopbar(){
+  const u=currentUser; if(!u)return;
+  document.getElementById('topbar-avatar').textContent=u.username.slice(0,2).toUpperCase();
+  const badge=document.getElementById('topbar-role-badge');
+  if(u.systemRole==='admin'){badge.textContent='⭐ Admin';badge.className='topbar-badge admin';}
+  else if(u.systemRole==='moderator'){badge.textContent='🛡️ Mod';badge.className='topbar-badge moderator';}
+  else{badge.textContent=getRoleLabel(u.role);badge.className='topbar-badge';}
+}
+function navTo(page){
+  ['feed','contacts','linkspage','users','profile','settings'].forEach(p=>{
+    document.getElementById('page-'+p).classList.toggle('hidden',p!==page);
+    const btn=document.querySelector(`[data-page="${p}"]`);
+    if(btn)btn.classList.toggle('active',p===page);
+  });
+  if(page==='feed')     renderFeed();
+  if(page==='contacts') renderContacts();
+  if(page==='users')    renderUsers();
+  if(page==='profile')  renderProfile();
+  if(page==='settings') buildNotifSettings();
+}
+
+/* ═══════════════════════════════════
+   CREATE TYPE TAB
+   ═══════════════════════════════════ */
+function switchCreateTab(type){
+  createType=type;
+  document.getElementById('tab-create-event').classList.toggle('active',type==='event');
+  document.getElementById('tab-create-post').classList.toggle('active',type==='post');
+  document.getElementById('event-fields').style.display=type==='event'?'':'none';
+}
+
+/* ═══════════════════════════════════
+   FEED RENDER
+   ═══════════════════════════════════ */
+function renderFeed(){
+  const canCreate = isAdmin();
+  document.getElementById('admin-create-section').classList.toggle('hidden',!canCreate);
+  if(canCreate) switchCreateTab(createType);
+  const posts = getPosts().slice().reverse();
+  const feed = document.getElementById('feed-list');
+  if(!posts.length){
+    feed.innerHTML=`<div class="empty-state"><div class="icon">🌿</div><p>Zatím žádné příspěvky.</p></div>`;
+    return;
+  }
+  feed.innerHTML = posts.map(renderPostCard).join('');
+}
+
+function renderPostCard(p){
+  const canEdit = isAdmin();
+  const canModerate = isModerator();
+
+  let eventHtml='';
+  if(p.type==='event'){
+    const navBtn = p.mapUrl ? `<a href="${escHtml(p.mapUrl)}" target="_blank" class="nav-link-btn">🗺️ Otevřít navigaci (Mapy.cz)</a>` : '';
+    eventHtml = `
+      <div class="event-details">
+        ${p.date?`<div class="event-detail-row"><span class="icon">📅</span><span class="val">${fmtDate(p.date)}</span></div>`:''}
+        ${p.time?`<div class="event-detail-row"><span class="icon">⏰</span><span class="val">${escHtml(p.time)}</span></div>`:''}
+        ${p.location?`<div class="event-detail-row"><span class="icon">📍</span><span class="val">${escHtml(p.location)}</span></div>`:''}
+        ${p.district?`<div class="event-detail-row"><span class="icon">🗺</span><span class="val">${escHtml(p.district)}</span></div>`:''}
+      </div>
+      ${navBtn}
+      ${renderCapacity(p)}
+      ${renderParticipants(p)}
+      <div class="post-footer">${renderAttendBtn(p)}</div>`;
+  }
+
+  // Comments
+  const commentsHtml = renderComments(p);
+
+  const adminBtns = canEdit ? `
+    <button class="btn btn-amber btn-sm" onclick="startEdit('${p.id}')">✏️</button>
+    <button class="btn btn-danger btn-sm" onclick="deletePost('${p.id}')">🗑️</button>` : '';
+  const modBtns = (!canEdit && canModerate) ? `
+    <button class="btn btn-danger btn-sm" onclick="deletePost('${p.id}')">🗑️</button>` : '';
+
+  return `
+  <div class="post-card ${p.type}" id="post-${p.id}">
+    <div class="post-header">
+      <div class="post-meta">
+        <span class="post-type-badge ${p.type==='event'?'badge-event':'badge-post'}">${p.type==='event'?'Akce':'Příspěvek'}</span>
+        <div class="post-title">${escHtml(p.title)}</div>
+        <div class="post-date">Přidal/a ${escHtml(p.author)} · ${new Date(p.createdAt).toLocaleDateString('cs-CZ')}</div>
+      </div>
+      <div class="post-actions-top">${adminBtns}${modBtns}</div>
+    </div>
+    ${p.body?`<div class="post-body">${escHtml(p.body)}</div>`:''}
+    ${eventHtml}
+    ${commentsHtml}
+  </div>`;
+}
+
+function renderCapacity(p){
+  if(!p.capacity)return'';
+  const roles=[{key:'pilot',label:'🚁 Piloti'},{key:'dobrovolnik',label:'🤝 Dobrovolníci'},{key:'zacatecnik',label:'🌱 Začátečníci'}];
+  const rows=roles.map(r=>{
+    const cap=p.capacity[r.key]||0; if(!cap)return'';
+    const count=(p.participants||[]).filter(x=>x.role===r.key).length;
+    const pct=Math.min(100,Math.round(count/cap*100));
+    return `<div class="capacity-row">
+      <span class="cap-label">${r.label}</span>
+      <div class="cap-bar-wrap"><div class="cap-bar ${count>=cap?'full':''}" style="width:${pct}%"></div></div>
+      <span class="cap-count">${count}/${cap}</span>
+    </div>`;
+  }).join('');
+  return rows?`<div class="capacity-section"><div class="capacity-title">Obsazení</div><div class="capacity-grid">${rows}</div></div>`:'';
+}
+
+function renderAttendBtn(p){
+  const u=currentUser;
+  if(isPrivileged())return'';
+  const isAttending=(p.participants||[]).some(x=>x.username===u.username);
+  if(isAttending)return`<div class="attend-btn attending">✅ Zúčastňuji se</div>`;
+  const cap=p.capacity?p.capacity[u.role]:null;
+  const count=(p.participants||[]).filter(x=>x.role===u.role).length;
+  if(cap!==null&&cap!==undefined&&count>=cap)return`<div class="attend-btn full">Kapacita role naplněna</div>`;
+  return`<button class="btn btn-primary attend-btn btn-sm" onclick="attendEvent('${p.id}')">Zúčastnit se</button>`;
+}
+
+function renderParticipants(p){
+  if(!p.participants||!p.participants.length)return'';
+  const chips=p.participants.map(x=>`<span class="participant-chip">${escHtml(x.username)} <span class="chip-role">${getRoleLabel(x.role).split(' ')[0]}</span></span>`).join('');
+  return`<div class="participants-list"><div class="participants-title">Přihlášení účastníci</div>${chips}</div>`;
+}
+
+/* ═══════════════════════════════════
+   COMMENTS
+   ═══════════════════════════════════ */
+function renderComments(p){
+  const comments = p.comments||[];
+  const list = comments.length
+    ? comments.map(c=>`
+        <div class="comment-item">
+          <div class="comment-meta"><strong>${escHtml(c.author)}</strong> (${escHtml(c.roleLabel)}) · ${fmtTs(c.ts)}</div>
+          <div class="comment-text">${escHtml(c.text)}</div>
+        </div>`).join('')
+    : '';
+
+  return `
+    <div class="comments-section">
+      <div class="comments-title">💬 Organizační komentáře</div>
+      ${list?`<div class="comment-list">${list}</div>`:'<div style="font-size:.82rem;color:var(--text3);margin-bottom:10px">Zatím žádné komentáře.</div>'}
+      <div class="comment-form">
+        <textarea class="comment-input" id="cmt-${p.id}" placeholder="Napiš vzkaz (max 150 znaků)…" maxlength="150" rows="2"
+          oninput="updateCharCount('${p.id}')"></textarea>
+        <span class="comment-chars" id="cmt-chars-${p.id}">150</span>
+        <button class="btn btn-secondary btn-sm" onclick="submitComment('${p.id}')">Odeslat</button>
+      </div>
+    </div>`;
+}
+
+function updateCharCount(postId){
+  const ta=document.getElementById('cmt-'+postId);
+  const span=document.getElementById('cmt-chars-'+postId);
+  if(ta&&span) span.textContent=150-ta.value.length;
+}
+
+function submitComment(postId){
+  const ta=document.getElementById('cmt-'+postId);
+  if(!ta)return;
+  const text=ta.value.trim();
+  if(!text)return showToast('Vzkaz je prázdný.','error');
+  if(text.length>150)return showToast('Vzkaz je příliš dlouhý (max 150 znaků).','error');
+  const posts=getPosts();
+  const idx=posts.findIndex(p=>p.id===postId);
+  if(idx<0)return;
+  if(!posts[idx].comments)posts[idx].comments=[];
+  posts[idx].comments.push({
+    id:uid(), author:currentUser.username,
+    roleLabel:getRoleLabel(currentUser.role).replace(/^[^ ]+ /,''),
+    text, ts:Date.now()
+  });
+  savePosts(posts);
+  ta.value='';
+  const span=document.getElementById('cmt-chars-'+postId);
+  if(span)span.textContent='150';
+  renderFeed();
+  // scroll back to post
+  setTimeout(()=>{const el=document.getElementById('post-'+postId);if(el)el.scrollIntoView({block:'nearest'})},50);
+}
+
+/* ═══════════════════════════════════
+   ATTEND EVENT
+   ═══════════════════════════════════ */
+function attendEvent(postId){
+  const posts=getPosts(); const idx=posts.findIndex(p=>p.id===postId); if(idx<0)return;
+  const p=posts[idx]; const u=currentUser;
+  if((p.participants||[]).some(x=>x.username===u.username))return;
+  const cap=p.capacity?p.capacity[u.role]:null;
+  const count=(p.participants||[]).filter(x=>x.role===u.role).length;
+  if(cap!==null&&cap!==undefined&&count>=cap){showToast('Kapacita pro tvoji roli je naplněna.','error');return;}
+  if(!p.participants)p.participants=[];
+  p.participants.push({username:u.username,role:u.role});
+  posts[idx]=p; savePosts(posts);
+  showToast('Přihlášen/a na akci! 🦌','success');
+  renderFeed();
+}
+
+/* ═══════════════════════════════════
+   SUBMIT / EDIT POST
+   ═══════════════════════════════════ */
+function submitPost(){
+  const err=document.getElementById('form-error'); err.classList.remove('show');
+  const title=document.getElementById('cf-title').value.trim();
+  const body=document.getElementById('cf-body').value.trim();
+  if(!title)return showErr(err,'Zadej název / nadpis.');
+  const isEvent=createType==='event';
+  let postData={type:isEvent?'event':'announcement',title,body,author:currentUser.username,createdAt:Date.now()};
+  if(isEvent){
+    const district=document.getElementById('cf-district').value;
+    if(!district)return showErr(err,'Vyber okres.');
+    const date=document.getElementById('cf-date').value;
+    if(!date)return showErr(err,'Vyber datum.');
+    postData.date=date; postData.time=document.getElementById('cf-time').value;
+    postData.location=document.getElementById('cf-location').value.trim();
+    postData.district=district; postData.mapUrl=document.getElementById('cf-mapurl').value.trim();
+    postData.capacity={
+      pilot:parseInt(document.getElementById('cf-cap-pilot').value)||0,
+      dobrovolnik:parseInt(document.getElementById('cf-cap-dobro').value)||0,
+      zacatecnik:parseInt(document.getElementById('cf-cap-zac').value)||0,
+    };
+  }
+  const posts=getPosts();
+  if(editingPostId){
+    const idx=posts.findIndex(p=>p.id===editingPostId);
+    if(idx>=0){postData.id=editingPostId;postData.createdAt=posts[idx].createdAt;postData.participants=posts[idx].participants||[];postData.comments=posts[idx].comments||[];posts[idx]=postData;}
+    editingPostId=null;
+    document.getElementById('cf-submit-btn').textContent='Zveřejnit';
+    document.getElementById('cf-cancel-edit').style.display='none';
+    document.getElementById('admin-form-title-label').textContent='Nový příspěvek / Akce';
+    showToast('Příspěvek upraven.','success');
+  } else {
+    postData.id=uid(); postData.participants=[]; postData.comments=[];
+    posts.push(postData);
+    showToast('Příspěvek zveřejněn! 📢','success');
+    sendNotification(postData);
+  }
+  savePosts(posts); clearCreateForm(); renderFeed();
+}
+
+function clearCreateForm(){
+  ['cf-title','cf-body','cf-date','cf-time','cf-location','cf-mapurl'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
+  document.getElementById('cf-district').value='';
+  document.getElementById('cf-cap-pilot').value=5;
+  document.getElementById('cf-cap-dobro').value=10;
+  document.getElementById('cf-cap-zac').value=5;
+  document.getElementById('form-error').classList.remove('show');
+}
+
+function deletePost(postId){
+  if(!confirm('Opravdu smazat tento příspěvek?'))return;
+  savePosts(getPosts().filter(p=>p.id!==postId));
+  showToast('Příspěvek smazán.','info'); renderFeed();
+}
+
+function startEdit(postId){
+  const p=getPosts().find(x=>x.id===postId); if(!p)return;
+  editingPostId=postId; createType=p.type==='event'?'event':'post'; switchCreateTab(createType);
+  document.getElementById('cf-title').value=p.title||'';
+  document.getElementById('cf-body').value=p.body||'';
+  if(p.type==='event'){
+    document.getElementById('cf-date').value=p.date||'';
+    document.getElementById('cf-time').value=p.time||'';
+    document.getElementById('cf-location').value=p.location||'';
+    document.getElementById('cf-district').value=p.district||'';
+    document.getElementById('cf-mapurl').value=p.mapUrl||'';
+    document.getElementById('cf-cap-pilot').value=p.capacity?.pilot||0;
+    document.getElementById('cf-cap-dobro').value=p.capacity?.dobrovolnik||0;
+    document.getElementById('cf-cap-zac').value=p.capacity?.zacatecnik||0;
+  }
+  document.getElementById('cf-submit-btn').textContent='Uložit změny';
+  document.getElementById('cf-cancel-edit').style.display='';
+  document.getElementById('admin-form-title-label').textContent='Upravit příspěvek';
+  document.getElementById('admin-create-section').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function cancelEdit(){
+  editingPostId=null; clearCreateForm();
+  document.getElementById('cf-submit-btn').textContent='Zveřejnit';
+  document.getElementById('cf-cancel-edit').style.display='none';
+  document.getElementById('admin-form-title-label').textContent='Nový příspěvek / Akce';
+}
+
+/* ═══════════════════════════════════
+   USERS PAGE
+   ═══════════════════════════════════ */
+function renderUsers(){
+  const canModerate = isModerator();
+  const canAdmin    = isAdmin();
+  if(!canModerate&&!canAdmin){
+    document.getElementById('users-tbody').innerHTML='<tr><td colspan="5">Přístup odepřen.</td></tr>';
+    return;
+  }
+  const header = document.getElementById('user-actions-header');
+  header.textContent = canModerate ? 'Akce' : '';
+
+  const users = getUsers();
+  const rows = Object.values(users).map(u=>{
+    const sysR = u.systemRole ? `<span class="topbar-badge ${u.systemRole}">${getRoleLabel(u.systemRole)}</span>` : '';
+    const now = Date.now();
+    const isTimedOut = u.timeoutUntil && now < u.timeoutUntil;
+    const timeoutStr = isTimedOut
+      ? `<span class="timeout-badge">⏱ Timeout do ${new Date(u.timeoutUntil).toLocaleString('cs-CZ',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</span>`
+      : '<span style="font-size:.8rem;color:var(--text3)">Aktivní</span>';
+
+    let actions = '';
+    if(canModerate && u.username !== currentUser.username){
+      // Moderator cannot touch admins
+      if(u.systemRole !== 'admin'){
+        const editBtn = `<button class="btn btn-amber btn-sm" onclick="openEditUserModal('${u.username}')">✏️ Upravit</button>`;
+        const timeoutBtn = isTimedOut
+          ? `<button class="btn btn-secondary btn-sm" onclick="removeTimeout('${u.username}')">↩ Zrušit timeout</button>`
+          : `<button class="btn btn-danger btn-sm" onclick="applyTimeout('${u.username}')">⏱ Timeout 24h</button>`;
+        actions = `<div class="user-actions">${editBtn}${timeoutBtn}</div>`;
+      } else {
+        actions = '<span style="font-size:.78rem;color:var(--text3)">—</span>';
+      }
+    }
+
+    return `<tr>
+      <td><strong>${escHtml(u.username)}</strong>${sysR?'<br>'+sysR:''}</td>
+      <td>${getRoleLabel(u.role)}</td>
+      <td>${escHtml(u.district)}</td>
+      <td>${timeoutStr}</td>
+      <td>${actions}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('users-tbody').innerHTML = rows||'<tr><td colspan="5">Žádní uživatelé.</td></tr>';
+}
+
+function applyTimeout(username){
+  if(!confirm(`Aplikovat 24h timeout pro uživatele ${username}?`))return;
+  const users=getUsers();
+  if(!users[username])return;
+  users[username].timeoutUntil = Date.now() + TIMEOUT_DURATION;
+  saveUsers(users);
+  showToast(`Timeout aplikován pro ${username}.`,'info');
+  renderUsers();
+}
+
+function removeTimeout(username){
+  const users=getUsers();
+  if(!users[username])return;
+  delete users[username].timeoutUntil;
+  saveUsers(users);
+  showToast(`Timeout zrušen pro ${username}.`,'success');
+  renderUsers();
+}
+
+function openEditUserModal(username){
+  const users=getUsers(); const u=users[username]; if(!u)return;
+  document.getElementById('modal-title-text').textContent=`Upravit uživatele: ${username}`;
+  document.getElementById('modal-body').innerHTML=`
+    <div class="form-group"><label>Role</label>
+      <select id="eu-role">
+        <option value="pilot" ${u.role==='pilot'?'selected':''}>🚁 Pilot</option>
+        <option value="dobrovolnik" ${u.role==='dobrovolnik'?'selected':''}>🤝 Dobrovolník</option>
+        <option value="zacatecnik" ${u.role==='zacatecnik'?'selected':''}>🌱 Začátečník</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Okres</label>
+      <select id="eu-district">
+        ${DISTRICTS.map(d=>`<option ${u.district===d?'selected':''}>${d}</option>`).join('')}
+      </select>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal()">Zrušit</button>
+      <button class="btn btn-primary" style="width:auto" onclick="saveEditUser('${username}')">Uložit</button>
+    </div>`;
+  document.getElementById('modal-overlay').classList.remove('hidden');
+}
+
+function saveEditUser(username){
+  const users=getUsers(); if(!users[username])return;
+  users[username].role     = document.getElementById('eu-role').value;
+  users[username].district = document.getElementById('eu-district').value;
+  saveUsers(users);
+  showToast(`Profil ${username} upraven.`,'success');
+  closeModal(); renderUsers();
+}
+
+/* ═══════════════════════════════════
+   CONTACTS / FARMERS DB
+   ═══════════════════════════════════ */
+function renderContacts(){
+  const canEdit = isAdmin() || isModerator();
+  document.getElementById('btn-add-contact').style.display = canEdit ? '' : 'none';
+  const query = (document.getElementById('contact-search').value||'').toLowerCase();
+  let contacts = getContacts();
+  if(query) contacts = contacts.filter(c=>
+    (c.name||'').toLowerCase().includes(query)||
+    (c.district||'').toLowerCase().includes(query)||
+    (c.phone||'').includes(query)||
+    (c.note||'').toLowerCase().includes(query)
+  );
+  const list = document.getElementById('contacts-list');
+  if(!contacts.length){
+    list.innerHTML=`<div class="empty-state"><div class="icon">🚜</div><p>${query?'Žádné výsledky pro "'+escHtml(query)+'".':'Zatím žádné kontakty.<br>Admini a moderátoři je mohou přidávat.'}</p></div>`;
+    return;
+  }
+  list.innerHTML = contacts.map(c=>{
+    const actBtns = canEdit ? `
+      <div class="contact-actions">
+        <button class="btn btn-amber btn-sm" onclick="openContactModal('${c.id}')">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteContact('${c.id}')">🗑️</button>
+      </div>` : '';
+    return `
+    <div class="contact-card">
+      <div class="contact-header">
+        <div>
+          <div class="contact-name">${escHtml(c.name)}</div>
+          <div class="contact-meta">
+            ${c.district?`<span class="contact-chip">🗺 ${escHtml(c.district)}</span>`:''}
+            ${c.phone?`<a href="tel:${escHtml(c.phone)}" class="contact-chip" style="text-decoration:none">📞 ${escHtml(c.phone)}</a>`:''}
+            ${c.rating?`<span class="star-badge">${'⭐'.repeat(Math.min(5,c.rating))}</span>`:''}
+          </div>
+          ${c.note?`<div class="contact-note">${escHtml(c.note)}</div>`:''}
+        </div>
+        ${actBtns}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openContactModal(id){
+  const c = id ? getContacts().find(x=>x.id===id) : null;
+  editingContactId = id||null;
+  document.getElementById('modal-title-text').textContent = c ? 'Upravit kontakt' : 'Přidat kontakt';
+  document.getElementById('modal-body').innerHTML=`
+    <div class="form-group"><label>Název / Jméno *</label><input type="text" id="cf-cn" value="${escHtml(c?.name||'')}" placeholder="Pan Novák / Agro Plzeň s.r.o."></div>
+    <div class="form-row">
+      <div class="form-group"><label>Telefon</label><input type="tel" id="cf-cp" value="${escHtml(c?.phone||'')}" placeholder="+420 ..."></div>
+      <div class="form-group"><label>Okres</label>
+        <select id="cf-cd">
+          <option value="">-- všechny --</option>
+          ${DISTRICTS.map(d=>`<option ${c?.district===d?'selected':''}>${d}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    <div class="form-group"><label>Hodnocení (1–5 ⭐)</label>
+      <select id="cf-cr">
+        <option value="">bez hodnocení</option>
+        ${[1,2,3,4,5].map(n=>`<option value="${n}" ${c?.rating==n?'selected':''}>${'⭐'.repeat(n)} (${n})</option>`).join('')}
+      </select>
+    </div>
+    <div class="form-group"><label>Poznámka / zkušenosti</label>
+      <textarea id="cf-cnote" rows="3" placeholder="Pan Novák – super domluva, hlásí dopředu…">${escHtml(c?.note||'')}</textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal()">Zrušit</button>
+      <button class="btn btn-primary" style="width:auto" onclick="saveContact()">Uložit</button>
+    </div>`;
+  document.getElementById('modal-overlay').classList.remove('hidden');
+}
+
+function saveContact(){
+  const name = document.getElementById('cf-cn').value.trim();
+  if(!name)return showToast('Zadej název / jméno.','error');
+  const contacts = getContacts();
+  const entry = {
+    id: editingContactId||uid(),
+    name,
+    phone: document.getElementById('cf-cp').value.trim(),
+    district: document.getElementById('cf-cd').value,
+    rating: parseInt(document.getElementById('cf-cr').value)||0,
+    note: document.getElementById('cf-cnote').value.trim(),
+    updatedAt: Date.now(),
+  };
+  if(editingContactId){
+    const idx=contacts.findIndex(c=>c.id===editingContactId);
+    if(idx>=0)contacts[idx]=entry; else contacts.push(entry);
+  } else {
+    contacts.push(entry);
+  }
+  saveContacts(contacts);
+  closeModal(); renderContacts();
+  showToast('Kontakt uložen.','success');
+}
+
+function deleteContact(id){
+  if(!confirm('Smazat tento kontakt?'))return;
+  saveContacts(getContacts().filter(c=>c.id!==id));
+  renderContacts(); showToast('Kontakt smazán.','info');
+}
+
+/* ═══════════════════════════════════
+   GUIDES MODAL
+   ═══════════════════════════════════ */
+const GUIDES = {
+  'jak-zacit': {
+    title: 'Jak začít jako dobrovolník',
+    html: `<p style="color:var(--text2);font-size:.92rem;line-height:1.7">
+      <strong style="color:var(--green3)">1. Registrace</strong><br>
+      Zaregistruj se v aplikaci, vyber roli <em>Dobrovolník</em> a svůj okres.<br><br>
+      <strong style="color:var(--green3)">2. Sleduj Nástěnku</strong><br>
+      Akce a výzvy ke spolupráci přidávají admini. Zapni si oznámení v nastavení!<br><br>
+      <strong style="color:var(--green3)">3. Přihlas se na akci</strong><br>
+      Na kartě akce klikni na <em>Zúčastnit se</em>. Kapacity jsou oddělené pro každou roli.<br><br>
+      <strong style="color:var(--green3)">4. Co s sebou</strong><br>
+      Pevná obuv, reflexní vesta, nabitý telefon. Přijď včas na sraz dle Mapy.cz.<br><br>
+      <strong style="color:var(--green3)">5. Kontakt</strong><br>
+      Organizační otázky piš do komentáře u dané akce nebo se ozvi přes WhatsApp skupinu.
+    </p>`
+  },
+  'pilot-license': {
+    title: 'Průkaz pilota dronu – jak na to',
+    html: `<p style="color:var(--text2);font-size:.92rem;line-height:1.7">
+      <strong style="color:var(--green3)">Kategorie A1/A3 (online)</strong><br>
+      Zdarma na webu CAA (caa.cz) – online test, platnost 5 let. Umožňuje létat s drony do 250 g (A1) nebo mimo civilizaci (A3).<br><br>
+      <strong style="color:var(--green3)">Kategorie A2</strong><br>
+      Teorie online na CAA + praktická část (vlastní výcvik) + zkouška u akreditovaného subjektu. Cena cca 1 500–2 500 Kč.<br><br>
+      <strong style="color:var(--green3)">Registrace provozovatele</strong><br>
+      Povinná pro drony nad 250 g nebo s kamerou. Online na caa.cz, poplatek 100 Kč/3 roky.<br><br>
+      <strong style="color:var(--green3)">Pojištění</strong><br>
+      Zákonné pojištění odpovědnosti z provozu UAS je povinné. Sjednáš u běžných pojišťoven.<br><br>
+      <a href="https://www.caa.cz/letadla-bez-pilota/provozovani-uas/" target="_blank" style="color:var(--green2)">→ Více na caa.cz</a>
+    </p>`
+  },
+  'thermal': {
+    title: 'Termovize a záchrana srnčat',
+    html: `<p style="color:var(--text2);font-size:.92rem;line-height:1.7">
+      <strong style="color:var(--green3)">Proč ráno?</strong><br>
+      Srnčata jsou nejlépe viditelná brzy ráno (4–7 h), kdy je kontrast těla vůči chladné trávě největší.<br><br>
+      <strong style="color:var(--green3)">Jak termovize funguje</strong><br>
+      Kamera snímá tepelné záření. Srna vydává teplo ~38 °C – na studeném pozadí louka svítí jasně.<br><br>
+      <strong style="color:var(--green3)">Postup přeletu</strong><br>
+      Systematické pruhy 20–30 m od sebe, výška 40–60 m. GPS zaznamená polohu každého srnčete.<br><br>
+      <strong style="color:var(--green3)">Co po nalezení</strong><br>
+      Vyznač polohu, informuj zemědělce. Srnčete se NEDotýkej holýma rukama – zanecháš lidský pach!<br><br>
+      <strong style="color:var(--green3)">Záchrana</strong><br>
+      Srnče opatrně přeneste na okraj pole za pomocí rukavic nebo deky. Matka si ho najde.
+    </p>`
+  }
+};
+
+function showGuide(key){
+  const g=GUIDES[key]; if(!g)return;
+  document.getElementById('modal-title-text').textContent=g.title;
+  document.getElementById('modal-body').innerHTML=g.html+`<div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal()">Zavřít</button></div>`;
+  document.getElementById('modal-overlay').classList.remove('hidden');
+}
+
+/* ═══════════════════════════════════
+   NOTIFICATIONS
+   ═══════════════════════════════════ */
+function buildNotifSettings(){
+  const u=currentUser;
+  document.getElementById('notif-all').checked=u.notifAll||false;
+  const container=document.getElementById('notif-districts-list');
+  container.innerHTML=DISTRICTS.map(d=>`
+    <label class="notif-district-row">
+      <input type="checkbox" value="${d}" ${(u.notifDistricts||[]).includes(d)?'checked':''}
+        onchange="saveNotifSettings()">
+      ${d}
+    </label>`).join('');
+}
+function saveNotifSettings(){
+  const all=document.getElementById('notif-all').checked;
+  const districts=[...document.querySelectorAll('#notif-districts-list input:checked')].map(i=>i.value);
+  currentUser.notifAll=all; currentUser.notifDistricts=districts;
+  const users=getUsers(); users[currentUser.username]=currentUser; saveUsers(users);
+  showToast('Nastavení uloženo.','success');
+  if(all||districts.length)requestNotifPermission();
+}
+function requestNotifPermission(){
+  if(!('Notification' in window))return;
+  if(Notification.permission==='default') Notification.requestPermission().then(p=>{if(p==='granted')showToast('Oznámení povolena! 🔔','success');});
+}
+function sendNotification(action){
+  const u=currentUser; if(!u)return;
+  const shouldNotify=u.notifAll||(u.notifDistricts||[]).includes(action.district);
+  if(!shouldNotify)return;
+  const title=`🦌 FawnGuard – ${action.type==='event'?'Nová akce':'Nový příspěvek'}`;
+  const body=`${action.title}${action.district?' · '+action.district:''}`;
+  if(Notification.permission==='granted') new Notification(title,{body,icon:'icons/icon-192.png'});
+  else showToast('🔔 '+body,'info');
+}
+
+/* ═══════════════════════════════════
+   PROFILE
+   ═══════════════════════════════════ */
+function renderProfile(){
+  const u=currentUser;
+  document.getElementById('prof-avatar').textContent=u.username.slice(0,2).toUpperCase();
+  document.getElementById('prof-name').textContent=u.username;
+  const sysR=u.systemRole?` · ${getRoleLabel(u.systemRole)}`:'';
+  document.getElementById('prof-meta').textContent=`${getRoleLabel(u.role)} · ${u.district}${sysR}`;
+  document.getElementById('prof-role-sel').value=u.role;
+  document.getElementById('prof-district-sel').value=u.district;
+}
+function saveProfile(){
+  currentUser.role=document.getElementById('prof-role-sel').value;
+  currentUser.district=document.getElementById('prof-district-sel').value;
+  const users=getUsers(); users[currentUser.username]=currentUser; saveUsers(users);
+  updateTopbar(); renderProfile(); showToast('Profil uložen.','success');
+}
+
+/* ═══════════════════════════════════
+   MODAL
+   ═══════════════════════════════════ */
+function closeModal(){ document.getElementById('modal-overlay').classList.add('hidden') }
+function overlayClose(e){ if(e.target===document.getElementById('modal-overlay'))closeModal() }
+
+/* ═══════════════════════════════════
+   TOAST
+   ═══════════════════════════════════ */
+function showToast(msg,type='success'){
+  const c=document.getElementById('toast-container');
+  const t=document.createElement('div'); t.className=`toast ${type}`; t.textContent=msg;
+  c.appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity .3s';setTimeout(()=>t.remove(),320)},3200);
+}
+
+/* ═══════════════════════════════════
+   INIT
+   ═══════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', boot);
+</script>
+</body>
+</html>
