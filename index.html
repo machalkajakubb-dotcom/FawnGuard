@@ -879,23 +879,63 @@ hr.divider { border: none; border-top: 1px solid var(--border); margin: 14px 0; 
      JAVASCRIPT
 ═══════════════════════════════════════ -->
 <script>
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   ★ SUPABASE CONFIG — doplň své údaje ★
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-const SUPABASE_URL      = 'https://TVUJ-PROJEKT.supabase.co';
-const SUPABASE_ANON_KEY = 'TVUJ-ANON-KEY';
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   ★ KROK 1 – VLOŽ SEM SVÉ SUPABASE ÚDAJE ★
+   Najdeš je v: Supabase Dashboard → Settings → API
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+const SUPABASE_URL      = 'https://bemtgvmbadwhdthnsxvw.supabase.co';   // ← Project URL
+const SUPABASE_ANON_KEY = 'sb_publishable_pStAiRxqTfZ6RFUGccJBXg_HLcGbu6A';                       // ← anon / public key
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   ★ ADMINS / MODERÁTOŘI — uživatelská jména ★
+   ★ KROK 2 – ADMINS / MODERÁTOŘI ★
+   Přidej sem uživatelská jména (lowercase)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 const ADMINS     = ['admin', 'jan_admin'];
 const MODERATORS = ['moderator', 'jirka'];   // ← tvoje jméno zde
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   INIT SUPABASE
+   INIT SUPABASE CLIENT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   REALTIME — živá synchronizace feedu
+   Když kdokoliv přidá/změní příspěvek nebo komentář,
+   všem online uživatelům se automaticky překreslí feed.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function startRealtime() {
+  // Debounce – nevolej renderFeed() víckrát za sebou v krátkém čase
+  let realtimeTimer = null;
+  function scheduleRefresh() {
+    clearTimeout(realtimeTimer);
+    realtimeTimer = setTimeout(() => {
+      // Překresli jen pokud je feed aktivní stránka
+      const feedActive = document.getElementById('p-feed')?.classList.contains('active');
+      if (feedActive) renderFeed();
+    }, 400);
+  }
+
+  db.channel('fawnguard-feed')
+    // Sleduj změny v tabulce actions (INSERT, UPDATE, DELETE)
+    .on('postgres_changes',
+      { event: '*', schema: 'public', table: 'actions' },
+      scheduleRefresh
+    )
+    // Sleduj změny v tabulce comments (INSERT, DELETE)
+    .on('postgres_changes',
+      { event: '*', schema: 'public', table: 'comments' },
+      scheduleRefresh
+    )
+    .subscribe((status) => {
+      if (status === 'SUBSCRIBED') {
+        console.log('✅ FawnGuard Realtime: připojeno');
+      }
+      if (status === 'CHANNEL_ERROR') {
+        console.warn('⚠️ FawnGuard Realtime: chyba kanálu');
+      }
+    });
+}
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    CONSTANTS
@@ -1016,6 +1056,7 @@ async function doLogin() {
   lsSet('fg_session', username);
   toast('Vítej zpět, ' + username + '! 🦌', 'ok');
   launchApp();
+  startRealtime();
 }
 
 async function doRegister() {
@@ -1047,6 +1088,7 @@ async function doRegister() {
   lsSet('fg_session', username);
   toast('Účet vytvořen! Vítej 🦌', 'ok');
   launchApp();
+  startRealtime();
 }
 
 async function doLogout() {
@@ -1643,8 +1685,10 @@ function toast(msg, type = 'ok') {
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 document.addEventListener('DOMContentLoaded', async () => {
   await boot();
-  // Background cleanup
-  if (CU) cleanOldEvents();
+  if (CU) {
+    cleanOldEvents();
+    startRealtime(); // ← spustí živou synchronizaci po přihlášení
+  }
 });
 </script>
 </body>
