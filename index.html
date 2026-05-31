@@ -2,533 +2,654 @@
 <html lang="cs">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#0d1f0d">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#2e7d32">
 <meta name="description" content="FawnGuard – Ochrana srnčat při sečení">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="FawnGuard">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <title>FawnGuard</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+<!-- Supabase CDN -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet">
+
 <style>
-/* ════════════════════════════════════════════════
-   VARIABLES & RESET
-════════════════════════════════════════════════ */
-:root{
-  --bg:#0d1f0d;--bg2:#111e11;--bg3:#1a2e1a;--panel:#162416;
-  --border:rgba(110,170,70,.20);--border2:rgba(110,170,70,.38);
-  --green:#6aaa3c;--green2:#88cc55;--green3:#aae07a;
-  --amber:#d4a830;--amber2:#ecd060;--red:#c84040;--red2:#e87070;
-  --blue2:#78b0e8;
-  --text:#ddecc8;--text2:#98b880;--text3:#5a7848;
-  --nav-h:64px;
-  --safe-b:env(safe-area-inset-bottom,0px);
-  --r:14px;--rs:9px;
-  --sh:0 4px 24px rgba(0,0,0,.5);--sh-sm:0 2px 10px rgba(0,0,0,.35);
-  --ff:'DM Sans',sans-serif;--fh:'Playfair Display',Georgia,serif;
-  --tr:.2s cubic-bezier(.4,0,.2,1);
+/* ═══════════════════════════════════════
+   DESIGN TOKENS
+═══════════════════════════════════════ */
+:root {
+  --primary: #2e7d32;
+  --primary-light: #43a047;
+  --primary-dark: #1b5e20;
+  --primary-bg: #e8f5e9;
+  --surface: #ffffff;
+  --surface2: #f4f7f5;
+  --surface3: #eef2ef;
+  --border: #e0e8e1;
+  --text: #1a2e1c;
+  --text2: #4a6350;
+  --text3: #8fa896;
+  --red: #c62828;
+  --red-bg: #ffebee;
+  --amber: #e65100;
+  --amber-bg: #fff3e0;
+  --blue: #1565c0;
+  --blue-bg: #e3f2fd;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
+  --shadow: 0 4px 12px rgba(0,0,0,.10), 0 2px 4px rgba(0,0,0,.06);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,.12), 0 4px 8px rgba(0,0,0,.08);
+  --r: 16px;
+  --r-sm: 10px;
+  --r-full: 999px;
+  --nav-h: 68px;
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-t: env(safe-area-inset-top, 0px);
+  --ff: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --tr: .18s cubic-bezier(.4,0,.2,1);
+  --max-w: 480px;
 }
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{-webkit-tap-highlight-color:transparent;font-size:16px}
-body{font-family:var(--ff);background:var(--bg);color:var(--text);
-  min-height:100dvh;overflow-x:hidden;line-height:1.55;
-  /* prevent iOS scroll bounce showing white */
-  overscroll-behavior:none;
+
+/* ═══════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+body {
+  font-family: var(--ff);
+  background: var(--surface2);
+  color: var(--text);
+  min-height: 100dvh;
+  overflow-x: hidden;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
-::selection{background:var(--green);color:#050f05}
-::-webkit-scrollbar{width:4px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:4px}
-.hidden{display:none!important}
+* { -webkit-tap-highlight-color: transparent; }
+::-webkit-scrollbar { width: 0; height: 0; }
+.hidden { display: none !important; }
+.ms { font-family: 'Material Symbols Rounded'; font-size: 24px; line-height: 1; user-select: none; }
 
-/* gradient bg */
-body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
-  background:radial-gradient(ellipse 80% 50% at 15% 5%,rgba(60,110,30,.14) 0%,transparent 55%),
-             radial-gradient(ellipse 60% 70% at 85% 95%,rgba(30,70,10,.12) 0%,transparent 55%)}
-#app{position:relative;z-index:1}
+/* ═══════════════════════════════════════
+   PC CONTAINER
+═══════════════════════════════════════ */
+#app {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  min-height: 100dvh;
+  background: var(--surface2);
+  position: relative;
+  box-shadow: 0 0 60px rgba(0,0,0,.15);
+}
+@media (min-width: 520px) {
+  body { background: #d9e4db; }
+  #app { min-height: 100dvh; }
+}
 
-/* ════════════════════════════════════════════════
+/* ═══════════════════════════════════════
    ANIMATIONS
-════════════════════════════════════════════════ */
-@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
-@keyframes fadeIn{from{opacity:0}to{opacity:1}}
-@keyframes toastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
-@keyframes modalIn{from{opacity:0;transform:scale(.95) translateY(8px)}to{opacity:1;transform:none}}
+═══════════════════════════════════════ */
+@keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:none; } }
+@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+@keyframes spin   { to { transform: rotate(360deg); } }
+@keyframes slideUp{ from { transform:translateY(100%); } to { transform:none; } }
 
-/* ════════════════════════════════════════════════
-   ONBOARDING / AUTH SCREENS
-════════════════════════════════════════════════ */
-.screen{
-  min-height:100dvh;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;
-  padding:28px 20px;animation:fadeUp .4s ease;
+/* ═══════════════════════════════════════
+   AUTH / ONBOARDING SCREENS
+═══════════════════════════════════════ */
+.screen {
+  min-height: 100dvh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 32px 20px;
+  background: var(--surface2);
+  animation: fadeUp .4s ease;
 }
-.logo-wrap{text-align:center;margin-bottom:32px}
-.logo-ico{width:76px;height:76px;border-radius:22px;
-  background:linear-gradient(145deg,var(--green),var(--green2));
-  display:inline-flex;align-items:center;justify-content:center;
-  font-size:40px;box-shadow:0 0 48px rgba(106,170,60,.3);margin-bottom:14px}
-.logo-title{font-family:var(--fh);font-size:2rem;font-weight:700;color:var(--green3)}
-.logo-sub{font-size:.8rem;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-top:3px}
-
-.ob-card{
-  background:var(--panel);border:1px solid var(--border);border-radius:var(--r);
-  padding:26px 22px;width:100%;max-width:400px;box-shadow:var(--sh);
+.logo-block { text-align: center; margin-bottom: 28px; }
+.logo-img {
+  width: 80px; height: 80px; border-radius: 22px;
+  background: linear-gradient(145deg, var(--primary), var(--primary-light));
+  display: inline-flex; align-items: center; justify-content: center;
+  margin-bottom: 12px;
+  box-shadow: 0 8px 24px rgba(46,125,50,.3);
+  overflow: hidden;
 }
-.ob-title{font-family:var(--fh);font-size:1.25rem;color:var(--green3);margin-bottom:18px}
+.logo-img img { width: 100%; height: 100%; object-fit: cover; }
+.logo-img-fallback { font-size: 44px; }
+.logo-name { font-size: 1.9rem; font-weight: 700; color: var(--primary-dark); letter-spacing: -.5px; }
+.logo-sub  { font-size: .78rem; color: var(--text3); text-transform: uppercase; letter-spacing: .1em; margin-top: 3px; }
 
-/* step dots */
-.dots{display:flex;justify-content:center;gap:6px;margin-bottom:24px}
-.dot{width:8px;height:8px;border-radius:4px;background:var(--bg3);transition:var(--tr)}
-.dot.on{background:var(--green);width:22px}
-.dot.done{background:var(--green2)}
-
-/* role buttons */
-.role-grid{display:flex;flex-direction:column;gap:10px}
-.role-btn{
-  display:flex;align-items:center;gap:14px;padding:14px 16px;
-  background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);
-  cursor:pointer;transition:var(--tr);color:var(--text);font-family:var(--ff);text-align:left;
+.auth-card {
+  background: var(--surface);
+  border-radius: var(--r);
+  padding: 24px 20px;
+  width: 100%; max-width: 400px;
+  box-shadow: var(--shadow-lg);
 }
-.role-btn:active,.role-btn.sel{background:rgba(106,170,60,.12);border-color:var(--green)}
-.role-btn .ico{font-size:1.5rem;min-width:34px;text-align:center}
-.role-btn .lbl{font-weight:600;font-size:.95rem}
-.role-btn .desc{font-size:.78rem;color:var(--text3);margin-top:1px}
 
-/* district grid */
-.dist-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
-.dist-btn{
-  padding:11px 8px;background:var(--bg2);border:1px solid var(--border);
-  border-radius:var(--rs);cursor:pointer;transition:var(--tr);color:var(--text);
-  font-family:var(--ff);font-size:.88rem;text-align:center;
+/* Step dots */
+.dots { display: flex; justify-content: center; gap: 6px; margin-bottom: 22px; }
+.dot  { width: 8px; height: 8px; border-radius: 4px; background: var(--border); transition: var(--tr); }
+.dot.on   { background: var(--primary); width: 22px; }
+.dot.done { background: var(--primary-light); }
+
+/* Role picker */
+.role-grid { display: flex; flex-direction: column; gap: 10px; }
+.role-btn {
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px; border-radius: var(--r-sm);
+  background: var(--surface2); border: 2px solid var(--border);
+  cursor: pointer; transition: var(--tr); color: var(--text); text-align: left;
+  font-family: var(--ff); min-height: 64px;
 }
-.dist-btn:active,.dist-btn.sel{background:rgba(106,170,60,.12);border-color:var(--green)}
+.role-btn:active, .role-btn.sel { background: var(--primary-bg); border-color: var(--primary); }
+.role-btn .ico { font-size: 1.6rem; min-width: 36px; text-align: center; }
+.role-btn .lbl { font-weight: 600; font-size: .95rem; }
+.role-btn .desc { font-size: .78rem; color: var(--text3); margin-top: 2px; }
 
-.hint{text-align:center;margin-top:14px;font-size:.82rem;color:var(--text3)}
+/* District grid */
+.dist-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+.dist-btn {
+  padding: 13px 8px; border-radius: var(--r-sm);
+  background: var(--surface2); border: 2px solid var(--border);
+  cursor: pointer; transition: var(--tr); color: var(--text);
+  font-family: var(--ff); font-size: .88rem; text-align: center; font-weight: 500;
+  min-height: 48px;
+}
+.dist-btn:active, .dist-btn.sel { background: var(--primary-bg); border-color: var(--primary); color: var(--primary-dark); }
 
-/* ════════════════════════════════════════════════
+.screen-title { font-size: 1.2rem; font-weight: 700; color: var(--text); margin-bottom: 16px; }
+.screen-hint  { text-align: center; margin-top: 14px; font-size: .8rem; color: var(--text3); }
+
+/* ═══════════════════════════════════════
    FORM ELEMENTS
-════════════════════════════════════════════════ */
-.fg{margin-bottom:16px}
-.fg label{display:block;font-size:.78rem;color:var(--text3);margin-bottom:6px;
-  text-transform:uppercase;letter-spacing:.06em;font-weight:500}
-.fg input,.fg select,.fg textarea{
-  width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:var(--rs);
-  padding:11px 13px;color:var(--text);font-family:var(--ff);font-size:.95rem;
-  outline:none;transition:var(--tr);-webkit-appearance:none;appearance:none;
+═══════════════════════════════════════ */
+.fg       { margin-bottom: 14px; }
+.fg label { display: block; font-size: .78rem; font-weight: 600; color: var(--text2); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .05em; }
+.fg input, .fg select, .fg textarea {
+  width: 100%; background: var(--surface2); border: 1.5px solid var(--border);
+  border-radius: var(--r-sm); padding: 13px 14px; color: var(--text);
+  font-family: var(--ff); font-size: .95rem; outline: none; transition: var(--tr);
+  -webkit-appearance: none; appearance: none; min-height: 48px;
 }
-.fg input:focus,.fg select:focus,.fg textarea:focus{
-  border-color:var(--green);box-shadow:0 0 0 3px rgba(106,170,60,.12)}
-.fg textarea{resize:vertical;min-height:76px}
-.fg select option{background:var(--bg2);color:var(--text)}
-.fg input[type=date],.fg input[type=time]{color-scheme:dark}
+.fg input:focus, .fg select:focus, .fg textarea:focus {
+  border-color: var(--primary); background: var(--surface);
+  box-shadow: 0 0 0 3px rgba(46,125,50,.12);
+}
+.fg textarea  { resize: vertical; min-height: 80px; }
+.fg select option { background: #fff; color: var(--text); }
+.fg input[type=date], .fg input[type=time] { color-scheme: light; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.cap-row  { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+.cap-row .fg { margin-bottom: 0; }
+.cap-lbl-sm { font-size: .74rem; color: var(--text3); margin-bottom: 4px; font-weight: 500; }
 
-.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.cap-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.err-msg {
+  background: var(--red-bg); border: 1.5px solid #ef9a9a;
+  color: var(--red); border-radius: var(--r-sm);
+  padding: 10px 13px; font-size: .86rem; margin-bottom: 12px; display: none;
+}
+.err-msg.show { display: block; }
+.info-box {
+  background: var(--primary-bg); border: 1.5px solid #a5d6a7;
+  border-radius: var(--r-sm); padding: 10px 13px;
+  font-size: .83rem; color: var(--primary-dark); margin-bottom: 14px;
+}
 
-.err{background:rgba(200,64,64,.12);border:1px solid rgba(200,64,64,.35);
-  color:var(--red2);border-radius:var(--rs);padding:9px 13px;font-size:.86rem;
-  margin-bottom:12px;display:none}
-.err.show{display:block}
-.info-box{background:rgba(106,170,60,.07);border:1px solid rgba(106,170,60,.2);
-  border-radius:var(--rs);padding:9px 13px;font-size:.82rem;color:var(--text2);
-  margin-bottom:14px;display:flex;gap:8px;align-items:flex-start}
-
-/* ════════════════════════════════════════════════
+/* ═══════════════════════════════════════
    BUTTONS
-════════════════════════════════════════════════ */
-.btn{
-  display:inline-flex;align-items:center;justify-content:center;gap:7px;
-  padding:11px 20px;border-radius:var(--rs);border:none;cursor:pointer;
-  font-family:var(--ff);font-size:.92rem;font-weight:600;transition:var(--tr);
-  -webkit-tap-highlight-color:transparent;white-space:nowrap;
+═══════════════════════════════════════ */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 0 20px; height: 48px; border-radius: var(--r-full);
+  border: none; cursor: pointer; font-family: var(--ff);
+  font-size: .92rem; font-weight: 600; transition: var(--tr);
+  white-space: nowrap; -webkit-tap-highlight-color: transparent;
 }
-.btn:active{transform:scale(.97)}
-.btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important}
-.bp{background:linear-gradient(135deg,var(--green),var(--green2));color:#030f03;width:100%}
-.bp:active{filter:brightness(.95)}
-.bs{background:var(--bg3);border:1px solid var(--border);color:var(--text)}
-.bd{background:rgba(200,64,64,.14);border:1px solid rgba(200,64,64,.38);color:var(--red2)}
-.ba{background:rgba(212,168,48,.12);border:1px solid rgba(212,168,48,.38);color:var(--amber2)}
-.bsm{padding:7px 13px;font-size:.8rem}
-.bw{width:100%}
+.btn:active { transform: scale(.97); }
+.btn:disabled { opacity: .45; cursor: not-allowed; transform: none !important; }
+.btn-p  { background: var(--primary); color: #fff; width: 100%; box-shadow: 0 4px 12px rgba(46,125,50,.3); }
+.btn-p:active  { background: var(--primary-dark); }
+.btn-s  { background: var(--surface2); border: 1.5px solid var(--border); color: var(--text2); }
+.btn-s:active  { background: var(--border); }
+.btn-d  { background: var(--red-bg); border: 1.5px solid #ef9a9a; color: var(--red); }
+.btn-d:active  { background: #ffcdd2; }
+.btn-a  { background: var(--amber-bg); border: 1.5px solid #ffcc80; color: var(--amber); }
+.btn-b  { background: var(--blue-bg);  border: 1.5px solid #90caf9;  color: var(--blue); }
+.btn-sm { height: 36px; padding: 0 14px; font-size: .8rem; border-radius: var(--r-full); }
+.btn-icon {
+  width: 36px; height: 36px; padding: 0; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 18px;
+}
+.tabs { display: flex; gap: 3px; background: var(--surface2); border-radius: var(--r-full); padding: 4px; margin-bottom: 16px; border: 1.5px solid var(--border); }
+.tab  { flex: 1; height: 38px; border-radius: var(--r-full); border: none; background: transparent; color: var(--text3); font-family: var(--ff); font-size: .84rem; cursor: pointer; transition: var(--tr); font-weight: 500; }
+.tab.on { background: var(--surface); color: var(--primary); font-weight: 600; box-shadow: var(--shadow-sm); }
+hr.divider { border: none; border-top: 1px solid var(--border); margin: 14px 0; }
 
-/* tabs */
-.tabs{display:flex;gap:3px;background:var(--bg2);border-radius:var(--rs);padding:3px;margin-bottom:18px}
-.tab{flex:1;padding:8px 6px;border-radius:7px;border:none;background:transparent;
-  color:var(--text3);font-family:var(--ff);font-size:.82rem;cursor:pointer;transition:var(--tr);font-weight:500}
-.tab.on{background:var(--panel);color:var(--text);border:1px solid var(--border)}
-
-.divider{border:none;border-top:1px solid var(--border);margin:14px 0}
-
-/* ════════════════════════════════════════════════
-   MAIN APP SHELL — MOBILE FIRST
-════════════════════════════════════════════════ */
-#main-app{display:flex;flex-direction:column;height:100dvh;overflow:hidden}
+/* ═══════════════════════════════════════
+   MAIN APP SHELL
+═══════════════════════════════════════ */
+#main-app { display: flex; flex-direction: column; height: 100dvh; overflow: hidden; }
 
 /* TOP HEADER */
-.topbar{
-  flex-shrink:0;height:52px;
-  background:rgba(11,27,11,.95);backdrop-filter:blur(14px);
-  border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;
-  padding:0 16px;
-  padding-top:env(safe-area-inset-top,0px);
+.topbar {
+  flex-shrink: 0;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 16px;
+  padding-top: var(--safe-t);
+  height: calc(56px + var(--safe-t));
+  display: flex; align-items: center; justify-content: space-between;
+  box-shadow: var(--shadow-sm);
+  position: relative; z-index: 10;
 }
-.tb-logo{font-family:var(--fh);font-size:1.15rem;color:var(--green3);font-weight:700}
-.tb-badge{
-  background:var(--bg3);border:1px solid var(--border);border-radius:99px;
-  padding:2px 9px;font-size:.68rem;color:var(--text3);letter-spacing:.03em;margin-left:8px;
+.tb-left { display: flex; align-items: center; gap: 10px; }
+.tb-logo-img {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: linear-gradient(145deg, var(--primary), var(--primary-light));
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden; flex-shrink: 0;
 }
-.tb-badge.admin{border-color:rgba(212,168,48,.4);color:var(--amber2);background:rgba(212,168,48,.08)}
-.tb-badge.mod{border-color:rgba(120,176,232,.4);color:var(--blue2);background:rgba(120,176,232,.08)}
-.tb-right{display:flex;align-items:center;gap:8px}
-.avatar{
-  width:34px;height:34px;border-radius:50%;
-  background:linear-gradient(135deg,var(--green),var(--green2));
-  border:none;cursor:pointer;font-size:.8rem;font-weight:700;color:#030f03;
-  font-family:var(--ff);display:flex;align-items:center;justify-content:center;
-  flex-shrink:0;
+.tb-logo-img img { width: 100%; height: 100%; object-fit: cover; }
+.tb-logo-fallback { font-size: 20px; }
+.tb-title { font-size: 1.15rem; font-weight: 700; color: var(--primary-dark); letter-spacing: -.3px; }
+.tb-badge {
+  background: var(--primary-bg); border: 1px solid #a5d6a7;
+  color: var(--primary); border-radius: var(--r-full);
+  padding: 2px 9px; font-size: .68rem; font-weight: 600;
+}
+.tb-badge.admin  { background: var(--amber-bg); border-color: #ffcc80; color: var(--amber); }
+.tb-badge.mod    { background: var(--blue-bg);  border-color: #90caf9; color: var(--blue); }
+.tb-right { display: flex; align-items: center; gap: 8px; }
+.avatar-btn {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: var(--primary); border: none; cursor: pointer;
+  font-size: .84rem; font-weight: 700; color: #fff;
+  font-family: var(--ff); display: flex; align-items: center; justify-content: center;
+  box-shadow: var(--shadow-sm); flex-shrink: 0;
 }
 
 /* SCROLL AREA */
-.page-wrap{
-  flex:1;overflow-y:auto;overflow-x:hidden;
-  -webkit-overflow-scrolling:touch;overscroll-behavior:contain;
+.page-wrap {
+  flex: 1; overflow-y: auto; overflow-x: hidden;
+  -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+  background: var(--surface2);
 }
-.page{padding:16px 14px;max-width:700px;margin:0 auto;display:none}
-.page.active{display:block;animation:fadeUp .3s ease}
-/* extra bottom padding so content clears the nav bar */
-.page{padding-bottom:calc(var(--nav-h) + 12px + var(--safe-b))}
+.page {
+  padding: 16px 14px;
+  padding-bottom: calc(var(--nav-h) + 16px + var(--safe-b));
+  max-width: var(--max-w); margin: 0 auto;
+  display: none;
+}
+.page.active { display: block; animation: fadeUp .28s ease; }
 
 /* BOTTOM NAV */
-.bottom-nav{
-  flex-shrink:0;
-  background:rgba(11,27,11,.97);backdrop-filter:blur(14px);
-  border-top:1px solid var(--border);
-  display:flex;align-items:stretch;
-  height:calc(var(--nav-h) + var(--safe-b));
-  padding-bottom:var(--safe-b);
+.bottom-nav {
+  flex-shrink: 0;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: flex; align-items: stretch;
+  height: calc(var(--nav-h) + var(--safe-b));
+  padding-bottom: var(--safe-b);
+  box-shadow: 0 -2px 12px rgba(0,0,0,.06);
+  position: relative; z-index: 10;
 }
-.nav-item{
-  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:3px;border:none;background:transparent;cursor:pointer;
-  color:var(--text3);font-family:var(--ff);font-size:.62rem;font-weight:500;
-  padding:6px 4px;transition:var(--tr);-webkit-tap-highlight-color:transparent;
-  min-width:0; /* prevent overflow */
+.nav-btn {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 3px; border: none; background: transparent; cursor: pointer;
+  color: var(--text3); font-family: var(--ff); font-size: .62rem; font-weight: 500;
+  padding: 6px 4px; transition: var(--tr); min-width: 0;
+  -webkit-tap-highlight-color: transparent;
 }
-.nav-item .ni{font-size:1.3rem;line-height:1}
-.nav-item.on{color:var(--green2)}
-.nav-item .nl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+.nav-btn .ms  { font-size: 22px; transition: var(--tr); }
+.nav-btn .nl  { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+.nav-btn.on   { color: var(--primary); }
+.nav-btn.on .ms { font-size: 24px; }
 
-/* ════════════════════════════════════════════════
-   PAGE HEADERS
-════════════════════════════════════════════════ */
-.ph{display:flex;align-items:center;justify-content:space-between;
-  margin-bottom:16px;flex-wrap:wrap;gap:10px}
-.ph h1{font-family:var(--fh);font-size:1.5rem;color:var(--green3)}
+/* ═══════════════════════════════════════
+   PAGE HEADER
+═══════════════════════════════════════ */
+.ph { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
+.ph h1 { font-size: 1.4rem; font-weight: 700; color: var(--text); }
 
-/* ════════════════════════════════════════════════
-   CARDS — FEED
-════════════════════════════════════════════════ */
-.feed{display:flex;flex-direction:column;gap:13px}
-.post{
-  background:var(--panel);border:1px solid var(--border);
-  border-radius:var(--r);padding:16px;box-shadow:var(--sh-sm);
-  animation:fadeUp .3s ease;
+/* ═══════════════════════════════════════
+   CARDS
+═══════════════════════════════════════ */
+.card {
+  background: var(--surface); border-radius: var(--r);
+  padding: 16px; box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border); margin-bottom: 12px;
+  animation: fadeUp .28s ease;
 }
-.post:hover{border-color:var(--border2)}
-.post.event{border-left:3px solid var(--green)}
-.post.announcement{border-left:3px solid var(--amber)}
+.card:last-child { margin-bottom: 0; }
 
-.post-top{display:flex;justify-content:space-between;gap:10px;margin-bottom:10px}
-.post-meta{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
-.pbadge{display:inline-block;padding:2px 7px;border-radius:4px;font-size:.68rem;
-  font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;width:fit-content}
-.pb-ev{background:rgba(106,170,60,.15);color:var(--green2);border:1px solid rgba(106,170,60,.3)}
-.pb-post{background:rgba(212,168,48,.1);color:var(--amber2);border:1px solid rgba(212,168,48,.25)}
-.post-title{font-family:var(--fh);font-size:1.05rem;color:var(--text);line-height:1.3;word-break:break-word}
-.post-by{font-size:.74rem;color:var(--text3);margin-top:2px}
-.post-btns{display:flex;gap:5px;flex-shrink:0;align-self:flex-start}
-
-.post-body{font-size:.9rem;color:var(--text2);margin-bottom:12px;
-  line-height:1.6;white-space:pre-wrap;word-break:break-word}
-
-.ev-info{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rs);
-  padding:12px 14px;margin-bottom:12px;display:flex;flex-direction:column;gap:7px}
-.ev-row{display:flex;align-items:center;gap:9px;font-size:.86rem}
-.ev-row .ico{width:18px;text-align:center;color:var(--green2);flex-shrink:0}
-.ev-row .val{color:var(--text2);word-break:break-all}
-
-.map-btn{
-  display:inline-flex;align-items:center;gap:8px;padding:9px 15px;
-  background:rgba(106,170,60,.12);border:1px solid rgba(106,170,60,.35);
-  border-radius:var(--rs);color:var(--green2);font-family:var(--ff);
-  font-size:.86rem;font-weight:600;text-decoration:none;
-  transition:var(--tr);margin-bottom:12px;width:100%;justify-content:center;
+/* ═══════════════════════════════════════
+   SECTION CARDS (settings etc)
+═══════════════════════════════════════ */
+.sec {
+  background: var(--surface); border-radius: var(--r);
+  padding: 16px 18px; margin-bottom: 12px;
+  box-shadow: var(--shadow-sm); border: 1px solid var(--border);
 }
-.map-btn:active{background:rgba(106,170,60,.22)}
-
-/* capacity */
-.cap-sec{margin-bottom:12px}
-.cap-lbl{font-size:.74rem;color:var(--text3);text-transform:uppercase;
-  letter-spacing:.06em;margin-bottom:7px;font-weight:500}
-.cap-grid{display:flex;flex-direction:column;gap:7px}
-.cap-r{display:flex;align-items:center;gap:9px}
-.cap-name{font-size:.8rem;color:var(--text2);min-width:82px;flex-shrink:0}
-.cap-track{flex:1;background:var(--bg2);border-radius:99px;height:5px;overflow:hidden}
-.cap-fill{height:100%;border-radius:99px;
-  background:linear-gradient(90deg,var(--green),var(--green2));transition:width .4s}
-.cap-fill.full{background:linear-gradient(90deg,var(--red),var(--red2))}
-.cap-num{font-size:.76rem;color:var(--text3);min-width:38px;text-align:right;flex-shrink:0}
-
-.post-foot{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
-.att-btn-wrap{}
-.att-on{
-  background:rgba(106,170,60,.12);border:1px solid rgba(106,170,60,.4);color:var(--green2);
-  padding:8px 14px;border-radius:var(--rs);font-family:var(--ff);
-  font-size:.84rem;font-weight:600;display:inline-block;
-}
-.att-full{
-  background:rgba(60,60,60,.12);border:1px solid rgba(100,100,100,.3);color:var(--text3);
-  padding:8px 14px;border-radius:var(--rs);font-family:var(--ff);font-size:.84rem;display:inline-block;
+.sec-title {
+  font-size: .9rem; font-weight: 700; color: var(--text);
+  margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 6px;
 }
 
-/* participants */
-.parts{margin-top:9px}
-.parts-lbl{font-size:.72rem;color:var(--text3);text-transform:uppercase;
-  letter-spacing:.05em;margin-bottom:5px}
-.part-chips{display:flex;flex-wrap:wrap;gap:5px}
-.pchip{background:var(--bg3);border:1px solid var(--border);border-radius:99px;
-  padding:3px 9px;font-size:.74rem;color:var(--text2);display:inline-flex;gap:4px}
-.pchip-r{font-size:.68rem;color:var(--text3)}
+/* ═══════════════════════════════════════
+   FEED / POSTS
+═══════════════════════════════════════ */
+.feed { display: flex; flex-direction: column; gap: 12px; }
 
-/* comments */
-.cmt-sec{margin-top:13px;border-top:1px solid var(--border);padding-top:12px}
-.cmt-lbl{font-size:.72rem;color:var(--text3);text-transform:uppercase;
-  letter-spacing:.05em;margin-bottom:9px;font-weight:500}
-.cmt-list{display:flex;flex-direction:column;gap:7px;margin-bottom:10px}
-.cmt{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rs);padding:8px 11px}
-.cmt-who{font-size:.72rem;color:var(--text3);margin-bottom:2px}
-.cmt-who strong{color:var(--green2)}
-.cmt-txt{font-size:.85rem;color:var(--text2);word-break:break-word}
-.cmt-form{display:flex;gap:7px;align-items:flex-end}
-.cmt-input{
-  flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:var(--rs);
-  padding:8px 11px;color:var(--text);font-family:var(--ff);font-size:.86rem;
-  outline:none;transition:var(--tr);resize:none;
+.post-badge {
+  display: inline-block; padding: 3px 9px; border-radius: var(--r-full);
+  font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+  margin-bottom: 6px;
 }
-.cmt-input:focus{border-color:var(--green)}
-.cmt-chars{font-size:.72rem;color:var(--text3);white-space:nowrap;padding-bottom:9px}
+.badge-ev   { background: var(--primary-bg); color: var(--primary-dark); }
+.badge-post { background: var(--amber-bg); color: var(--amber); }
 
-/* ════════════════════════════════════════════════
-   ADMIN CREATE FORM
-════════════════════════════════════════════════ */
-.create-card{
-  background:var(--panel);border:1px solid var(--border2);
-  border-radius:var(--r);padding:18px 16px;margin-bottom:16px;box-shadow:var(--sh);
+.post-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.post-title  { font-size: 1rem; font-weight: 700; color: var(--text); line-height: 1.3; word-break: break-word; flex: 1; }
+.post-by     { font-size: .75rem; color: var(--text3); margin-top: 2px; }
+.post-body   { font-size: .9rem; color: var(--text2); margin-bottom: 10px; white-space: pre-wrap; word-break: break-word; line-height: 1.6; }
+.post-btns   { display: flex; gap: 5px; flex-shrink: 0; }
+
+/* Event info box */
+.ev-info {
+  background: var(--surface2); border-radius: var(--r-sm);
+  padding: 12px 14px; margin-bottom: 10px;
+  display: flex; flex-direction: column; gap: 7px;
+  border: 1px solid var(--border);
 }
-.create-title{font-family:var(--fh);font-size:1.1rem;color:var(--green3);margin-bottom:14px}
+.ev-row { display: flex; align-items: center; gap: 9px; font-size: .86rem; }
+.ev-row .ei  { font-size: 16px; flex-shrink: 0; }
+.ev-row .ev  { color: var(--text2); word-break: break-all; }
 
-/* ════════════════════════════════════════════════
-   SETTINGS / PROFILE
-════════════════════════════════════════════════ */
-.sec{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);
-  padding:16px 18px;margin-bottom:14px}
-.sec-title{font-family:var(--fh);font-size:.95rem;color:var(--green2);
-  margin-bottom:14px;padding-bottom:9px;border-bottom:1px solid var(--border)}
-.prof-head{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);
-  padding:18px;display:flex;align-items:center;gap:14px;margin-bottom:14px}
-.prof-av{width:58px;height:58px;min-width:58px;border-radius:50%;
-  background:linear-gradient(135deg,var(--green),var(--green2));
-  display:flex;align-items:center;justify-content:center;
-  font-size:1.45rem;font-weight:700;color:#030f03;font-family:var(--ff)}
-.prof-name{font-family:var(--fh);font-size:1.2rem;color:var(--text)}
-.prof-meta{font-size:.8rem;color:var(--text3);margin-top:3px}
+/* Map button */
+.map-btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 13px; border-radius: var(--r-sm);
+  background: var(--primary); color: #fff;
+  font-family: var(--ff); font-size: .88rem; font-weight: 600;
+  text-decoration: none; transition: var(--tr); margin-bottom: 10px;
+  box-shadow: 0 3px 10px rgba(46,125,50,.25);
+}
+.map-btn:active { background: var(--primary-dark); }
 
-/* toggle switch */
-.tog-row{display:flex;align-items:center;justify-content:space-between;
-  padding:8px 0;gap:12px}
-.tog-lbl{font-size:.88rem;color:var(--text2)}
-.tog-lbl small{display:block;font-size:.74rem;color:var(--text3);margin-top:1px}
-.tog{position:relative;width:42px;height:22px;flex-shrink:0}
-.tog input{opacity:0;width:0;height:0}
-.tog-sl{position:absolute;inset:0;background:var(--bg3);border-radius:22px;
-  cursor:pointer;transition:var(--tr);border:1px solid var(--border)}
-.tog-sl::before{content:'';position:absolute;left:3px;top:3px;width:14px;height:14px;
-  background:var(--text3);border-radius:50%;transition:var(--tr)}
-.tog input:checked+.tog-sl{background:rgba(106,170,60,.2);border-color:var(--green)}
-.tog input:checked+.tog-sl::before{transform:translateX(20px);background:var(--green2)}
-.nd-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}
-.nd-row{display:flex;align-items:center;gap:7px;font-size:.82rem;color:var(--text2)}
-.nd-row input[type=checkbox]{accent-color:var(--green);width:14px;height:14px}
+/* Capacity */
+.cap-sec { margin-bottom: 10px; }
+.cap-title { font-size: .74rem; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; }
+.cap-grid  { display: flex; flex-direction: column; gap: 7px; }
+.cap-r     { display: flex; align-items: center; gap: 9px; }
+.cap-name  { font-size: .8rem; color: var(--text2); min-width: 84px; flex-shrink: 0; }
+.cap-track { flex: 1; background: var(--surface3); border-radius: var(--r-full); height: 6px; overflow: hidden; }
+.cap-fill  { height: 100%; border-radius: var(--r-full); background: var(--primary); transition: width .4s; }
+.cap-fill.full { background: var(--red); }
+.cap-num   { font-size: .78rem; color: var(--text3); min-width: 38px; text-align: right; flex-shrink: 0; }
 
-/* ════════════════════════════════════════════════
-   USERS TABLE
-════════════════════════════════════════════════ */
-.utbl{width:100%;border-collapse:collapse}
-.utbl th{text-align:left;font-size:.72rem;color:var(--text3);
-  text-transform:uppercase;letter-spacing:.05em;
-  padding:7px 10px;border-bottom:1px solid var(--border);font-weight:500}
-.utbl td{padding:9px 10px;border-bottom:1px solid rgba(110,170,70,.07);
-  font-size:.84rem;color:var(--text2);vertical-align:middle;word-break:break-word}
-.utbl tr:last-child td{border-bottom:none}
-.utbl tr:hover td{background:rgba(106,170,60,.03)}
-.u-actions{display:flex;gap:5px;flex-wrap:wrap}
-.to-badge{background:rgba(200,64,64,.14);border:1px solid rgba(200,64,64,.3);
-  color:var(--red2);border-radius:99px;padding:2px 7px;font-size:.7rem}
+/* Attend */
+.att-on   { display:inline-block; background: var(--primary-bg); border: 1.5px solid #a5d6a7; color: var(--primary-dark); padding: 10px 16px; border-radius: var(--r-full); font-size: .84rem; font-weight: 600; }
+.att-full { display:inline-block; background: var(--surface2); border: 1.5px solid var(--border); color: var(--text3); padding: 10px 16px; border-radius: var(--r-full); font-size: .84rem; }
 
-/* ════════════════════════════════════════════════
+/* Participants */
+.parts { margin-top: 8px; }
+.parts-lbl { font-size: .72rem; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
+.part-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.pchip { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-full); padding: 4px 10px; font-size: .76rem; color: var(--text2); }
+
+/* ═══════════════════════════════════════
+   COMMENTS
+═══════════════════════════════════════ */
+.cmt-sec  { margin-top: 12px; border-top: 1px solid var(--border); padding-top: 12px; }
+.cmt-lbl  { font-size: .72rem; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; }
+.cmt-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+.cmt      { background: var(--surface2); border-radius: var(--r-sm); padding: 10px 12px; border: 1px solid var(--border); }
+.cmt-who  { font-size: .74rem; color: var(--text3); margin-bottom: 3px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.cmt-who strong { color: var(--primary-dark); font-weight: 600; }
+.cmt-txt  { font-size: .86rem; color: var(--text2); word-break: break-word; line-height: 1.5; }
+.cmt-form { display: flex; gap: 8px; align-items: flex-end; }
+.cmt-input {
+  flex: 1; background: var(--surface2); border: 1.5px solid var(--border);
+  border-radius: 12px; padding: 10px 13px; color: var(--text);
+  font-family: var(--ff); font-size: .86rem; outline: none; transition: var(--tr);
+  resize: none; min-height: 48px;
+}
+.cmt-input:focus { border-color: var(--primary); background: var(--surface); }
+.cmt-chars { font-size: .72rem; color: var(--text3); padding-bottom: 9px; white-space: nowrap; }
+
+/* ═══════════════════════════════════════
+   CREATE FORM
+═══════════════════════════════════════ */
+.create-card {
+  background: var(--surface); border-radius: var(--r);
+  padding: 18px 16px; margin-bottom: 16px;
+  box-shadow: var(--shadow); border: 1px solid var(--border);
+}
+.create-title { font-size: 1.05rem; font-weight: 700; color: var(--text); margin-bottom: 14px; }
+
+/* ═══════════════════════════════════════
    CONTACTS
-════════════════════════════════════════════════ */
-.ct-list{display:flex;flex-direction:column;gap:11px}
-.ct{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);
-  padding:14px 16px;box-shadow:var(--sh-sm);animation:fadeUp .3s ease}
-.ct:hover{border-color:var(--border2)}
-.ct-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px}
-.ct-name{font-family:var(--fh);font-size:1rem;color:var(--text)}
-.ct-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:7px}
-.ct-chip{background:var(--bg3);border:1px solid var(--border);border-radius:99px;
-  padding:3px 9px;font-size:.75rem;color:var(--text2);display:inline-flex;
-  align-items:center;gap:4px;text-decoration:none}
-.star{background:rgba(212,168,48,.1);border:1px solid rgba(212,168,48,.3);
-  color:var(--amber2);border-radius:99px;padding:2px 7px;font-size:.7rem}
-.ct-note{font-size:.84rem;color:var(--text3);font-style:italic;
-  border-left:2px solid var(--border2);padding-left:9px;margin-top:7px;
-  word-break:break-word}
-.ct-btns{display:flex;gap:5px;flex-shrink:0}
-.search{
-  width:100%;background:var(--bg2);border:1px solid var(--border);
-  border-radius:var(--rs);padding:10px 13px;color:var(--text);
-  font-family:var(--ff);font-size:.92rem;outline:none;transition:var(--tr);
-  -webkit-appearance:none;margin-bottom:14px;
+═══════════════════════════════════════ */
+.ct-list { display: flex; flex-direction: column; gap: 10px; }
+.ct { background: var(--surface); border-radius: var(--r); padding: 15px 16px; box-shadow: var(--shadow-sm); border: 1px solid var(--border); animation: fadeUp .28s ease; }
+.ct-top  { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.ct-name { font-size: 1rem; font-weight: 700; color: var(--text); }
+.ct-chips { display: flex; flex-wrap: wrap; gap: 5px; margin: 7px 0; }
+.ct-chip  { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-full); padding: 3px 10px; font-size: .76rem; color: var(--text2); display: inline-flex; align-items: center; gap: 4px; text-decoration: none; }
+.star-badge { background: var(--amber-bg); border: 1px solid #ffcc80; color: var(--amber); border-radius: var(--r-full); padding: 3px 10px; font-size: .76rem; }
+.ct-note { font-size: .84rem; color: var(--text3); border-left: 3px solid var(--primary-bg); padding-left: 10px; margin-top: 8px; word-break: break-word; line-height: 1.5; }
+.ct-btns { display: flex; gap: 5px; flex-shrink: 0; }
+.search-box {
+  width: 100%; background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: var(--r-full); padding: 12px 16px; color: var(--text);
+  font-family: var(--ff); font-size: .92rem; outline: none; transition: var(--tr);
+  -webkit-appearance: none; margin-bottom: 14px; min-height: 48px;
 }
-.search:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(106,170,60,.1)}
+.search-box:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(46,125,50,.1); }
 
-/* ════════════════════════════════════════════════
+/* ═══════════════════════════════════════
    LINKS PAGE
-════════════════════════════════════════════════ */
-.links-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
-.lcard{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);
-  padding:15px 13px;text-decoration:none;transition:var(--tr);
-  display:flex;flex-direction:column;gap:7px;cursor:pointer;-webkit-tap-highlight-color:transparent}
-.lcard:active{transform:scale(.97)}
-.lcard:hover{border-color:var(--border2)}
-.lc-ico{font-size:1.7rem}
-.lc-title{font-weight:600;font-size:.9rem;color:var(--text);line-height:1.3}
-.lc-desc{font-size:.75rem;color:var(--text3);line-height:1.45}
-.slabel{font-size:.74rem;color:var(--text3);text-transform:uppercase;
-  letter-spacing:.08em;font-weight:600;margin:16px 0 8px}
-
-/* ════════════════════════════════════════════════
-   MODAL
-════════════════════════════════════════════════ */
-.overlay{
-  position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.72);
-  backdrop-filter:blur(5px);display:flex;align-items:flex-end;
-  padding:0;animation:fadeIn .2s ease;
+═══════════════════════════════════════ */
+.links-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.lcard {
+  background: var(--surface); border-radius: var(--r); padding: 16px 13px;
+  text-decoration: none; transition: var(--tr); display: flex; flex-direction: column; gap: 6px;
+  cursor: pointer; box-shadow: var(--shadow-sm); border: 1px solid var(--border);
 }
-/* sheet style on mobile, centered on desktop */
-.modal{
-  background:var(--panel);border:1px solid var(--border2);
-  border-radius:20px 20px 0 0;padding:22px 18px;
-  width:100%;max-height:90dvh;overflow-y:auto;
-  box-shadow:var(--sh);animation:modalIn .25s ease;
-  padding-bottom:calc(18px + env(safe-area-inset-bottom,0px));
-}
-.modal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
-.modal-ttl{font-family:var(--fh);font-size:1.15rem;color:var(--green3)}
-.modal-x{background:var(--bg3);border:1px solid var(--border);border-radius:50%;
-  width:30px;height:30px;display:flex;align-items:center;justify-content:center;
-  cursor:pointer;font-size:1rem;color:var(--text3);flex-shrink:0}
-.modal-x:active{background:var(--bg2)}
-.modal-foot{display:flex;gap:9px;margin-top:18px;justify-content:flex-end}
+.lcard:active { transform: scale(.97); background: var(--surface2); }
+.lc-ico   { font-size: 1.8rem; }
+.lc-title { font-weight: 600; font-size: .88rem; color: var(--text); line-height: 1.3; }
+.lc-desc  { font-size: .76rem; color: var(--text3); line-height: 1.4; }
+.sec-label { font-size: .76rem; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .08em; margin: 16px 0 8px; }
 
-/* ════════════════════════════════════════════════
+/* ═══════════════════════════════════════
+   USERS TABLE
+═══════════════════════════════════════ */
+.user-cards { display: flex; flex-direction: column; gap: 10px; }
+.user-card  {
+  background: var(--surface); border-radius: var(--r);
+  padding: 14px 16px; box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+  display: flex; align-items: center; gap: 13px;
+}
+.user-av {
+  width: 44px; height: 44px; min-width: 44px; border-radius: 50%;
+  background: var(--primary-bg); border: 2px solid #a5d6a7;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .9rem; font-weight: 700; color: var(--primary-dark); flex-shrink: 0;
+}
+.user-info { flex: 1; min-width: 0; }
+.user-name { font-weight: 700; font-size: .92rem; color: var(--text); }
+.user-meta { font-size: .76rem; color: var(--text3); margin-top: 2px; }
+.user-actions-row { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 8px; }
+.to-badge  { background: var(--red-bg); border: 1px solid #ef9a9a; color: var(--red); border-radius: var(--r-full); padding: 2px 8px; font-size: .7rem; font-weight: 600; }
+
+/* ═══════════════════════════════════════
+   PROFILE
+═══════════════════════════════════════ */
+.prof-head {
+  background: linear-gradient(145deg, var(--primary), var(--primary-light));
+  border-radius: var(--r); padding: 24px 18px;
+  display: flex; align-items: center; gap: 15px;
+  margin-bottom: 14px; box-shadow: 0 4px 20px rgba(46,125,50,.25);
+}
+.prof-av-large {
+  width: 62px; height: 62px; min-width: 62px; border-radius: 50%;
+  background: rgba(255,255,255,.2); border: 3px solid rgba(255,255,255,.5);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem; font-weight: 700; color: #fff; font-family: var(--ff);
+}
+.prof-name { font-size: 1.2rem; font-weight: 700; color: #fff; }
+.prof-meta { font-size: .8rem; color: rgba(255,255,255,.75); margin-top: 3px; }
+
+/* ═══════════════════════════════════════
+   TOGGLE
+═══════════════════════════════════════ */
+.tog-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; gap: 12px; }
+.tog-lbl { font-size: .88rem; color: var(--text2); }
+.tog-lbl small { display: block; font-size: .76rem; color: var(--text3); margin-top: 1px; }
+.tog { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+.tog input { opacity: 0; width: 0; height: 0; }
+.tog-sl { position: absolute; inset: 0; background: var(--border); border-radius: 24px; cursor: pointer; transition: var(--tr); }
+.tog-sl::before { content: ''; position: absolute; left: 3px; top: 3px; width: 18px; height: 18px; background: #fff; border-radius: 50%; transition: var(--tr); box-shadow: var(--shadow-sm); }
+.tog input:checked + .tog-sl { background: var(--primary); }
+.tog input:checked + .tog-sl::before { transform: translateX(20px); }
+.nd-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+.nd-row  { display: flex; align-items: center; gap: 7px; font-size: .83rem; color: var(--text2); }
+.nd-row input[type=checkbox] { accent-color: var(--primary); width: 16px; height: 16px; }
+
+/* ═══════════════════════════════════════
+   MODAL (bottom sheet)
+═══════════════════════════════════════ */
+.overlay {
+  position: fixed; inset: 0; z-index: 900;
+  background: rgba(0,0,0,.5); backdrop-filter: blur(4px);
+  display: flex; align-items: flex-end;
+  animation: fadeIn .2s ease;
+}
+.modal {
+  background: var(--surface); border-radius: 20px 20px 0 0;
+  padding: 20px 18px; width: 100%; max-height: 92dvh;
+  overflow-y: auto; box-shadow: var(--shadow-lg);
+  animation: slideUp .25s ease;
+  padding-bottom: calc(20px + var(--safe-b));
+}
+.modal-hdr  { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+.modal-ttl  { font-size: 1.1rem; font-weight: 700; color: var(--text); }
+.modal-x    { background: var(--surface2); border: none; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text2); font-size: 1.1rem; }
+.modal-x:active { background: var(--border); }
+.modal-foot { display: flex; gap: 9px; margin-top: 16px; justify-content: flex-end; }
+@media (min-width: 520px) {
+  .overlay { align-items: center; }
+  .modal   { border-radius: var(--r); max-width: 460px; margin: auto; padding-bottom: 20px; animation: fadeUp .25s ease; }
+}
+
+/* ═══════════════════════════════════════
    TOAST
-════════════════════════════════════════════════ */
-#toast-ct{
-  position:fixed;bottom:calc(var(--nav-h) + var(--safe-b) + 10px);
-  left:50%;transform:translateX(-50%);z-index:999;
-  display:flex;flex-direction:column;gap:7px;align-items:center;
-  pointer-events:none;width:calc(100% - 28px);max-width:360px;
+═══════════════════════════════════════ */
+#toast-ct {
+  position: fixed; bottom: calc(var(--nav-h) + var(--safe-b) + 12px);
+  left: 50%; transform: translateX(-50%);
+  z-index: 999; display: flex; flex-direction: column; gap: 7px;
+  align-items: center; pointer-events: none;
+  width: calc(100% - 28px); max-width: 380px;
 }
-.toast{
-  background:var(--panel);border:1px solid var(--border2);
-  border-radius:var(--r);padding:11px 16px;font-size:.86rem;color:var(--text);
-  box-shadow:var(--sh);animation:toastIn .3s ease;
-  width:100%;text-align:center;pointer-events:auto;
+.toast {
+  background: #1a2e1c; color: #e8f5e9;
+  border-radius: var(--r-full); padding: 12px 20px;
+  font-size: .87rem; font-weight: 500; box-shadow: var(--shadow-lg);
+  animation: fadeUp .28s ease; width: auto; text-align: center;
+  pointer-events: auto; display: flex; align-items: center; gap: 7px;
 }
-.toast.ok{border-color:rgba(106,170,60,.5)}
-.toast.err{border-color:rgba(200,64,64,.5);color:var(--red2)}
-.toast.info{border-color:rgba(212,168,48,.45);color:var(--amber2)}
+.toast.err  { background: var(--red); }
+.toast.info { background: #1565c0; }
 
-/* ════════════════════════════════════════════════
+/* ═══════════════════════════════════════
+   LOADER
+═══════════════════════════════════════ */
+.spinner {
+  width: 22px; height: 22px; border-radius: 50%;
+  border: 2.5px solid rgba(255,255,255,.3);
+  border-top-color: #fff; animation: spin .7s linear infinite;
+  display: inline-block;
+}
+.loading-overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--surface2);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;
+}
+.loading-overlay .spinner { border-color: rgba(46,125,50,.2); border-top-color: var(--primary); width: 36px; height: 36px; border-width: 3.5px; }
+
+/* ═══════════════════════════════════════
    EMPTY STATE
-════════════════════════════════════════════════ */
-.empty{text-align:center;padding:44px 16px;color:var(--text3)}
-.empty .ei{font-size:2.4rem;margin-bottom:12px;opacity:.45}
-.empty p{font-size:.88rem;line-height:1.6}
+═══════════════════════════════════════ */
+.empty { text-align: center; padding: 44px 16px; color: var(--text3); }
+.empty .ei { font-size: 2.6rem; margin-bottom: 12px; opacity: .4; }
+.empty p { font-size: .88rem; line-height: 1.7; }
 
-/* ════════════════════════════════════════════════
-   DESKTOP ADJUSTMENTS
-════════════════════════════════════════════════ */
-@media(min-width:640px){
-  .overlay{align-items:center;padding:20px}
-  .modal{border-radius:var(--r);max-width:500px;margin:auto;
-    padding-bottom:22px}
-  .form-row{grid-template-columns:1fr 1fr}
-  .cap-row{grid-template-columns:1fr 1fr 1fr}
-  .links-grid{grid-template-columns:1fr 1fr}
-}
-@media(max-width:380px){
-  .links-grid{grid-template-columns:1fr}
-  .form-row{grid-template-columns:1fr}
-  .cap-row{grid-template-columns:1fr 1fr}
-  .utbl th:nth-child(3),.utbl td:nth-child(3){display:none}
+/* ═══════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════ */
+@media (max-width: 380px) {
+  .links-grid { grid-template-columns: 1fr; }
+  .form-row   { grid-template-columns: 1fr; }
+  .cap-row    { grid-template-columns: 1fr 1fr; }
 }
 </style>
 </head>
 <body>
+
+<!-- Loading overlay -->
+<div class="loading-overlay" id="loading-overlay">
+  <div class="spinner"></div>
+  <span style="font-size:.9rem;color:var(--text3)">Načítání…</span>
+</div>
+
 <div id="app">
 
-<!-- ══════════ ONBOARDING: ROLE ══════════ -->
+<!-- ═══════════ ONBOARDING: ROLE ═══════════ -->
 <div id="s-role" class="screen hidden">
-  <div class="logo-wrap">
-    <div class="logo-ico">🦌</div>
-    <div class="logo-title">FawnGuard</div>
+  <div class="logo-block">
+    <div class="logo-img"><img src="icons/icon-192.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="logo-img-fallback" style="display:none">🦌</span></div>
+    <div class="logo-name">FawnGuard</div>
     <div class="logo-sub">Ochrana srnčat při sečení</div>
   </div>
-  <div class="ob-card">
+  <div class="auth-card">
     <div class="dots"><div class="dot on"></div><div class="dot"></div><div class="dot"></div></div>
-    <div class="ob-title">Kdo jsi?</div>
+    <div class="screen-title">Kdo jsi?</div>
     <div class="role-grid">
       <button class="role-btn" data-role="pilot" onclick="pickRole(this)">
-        <span class="ico">🚁</span>
-        <div><div class="lbl">Pilot</div><div class="desc">Provozuji dron, vedu záchranné přelety</div></div>
+        <span class="ico">🚁</span><div><div class="lbl">Pilot</div><div class="desc">Provozuji dron, vedu přelety</div></div>
       </button>
       <button class="role-btn" data-role="dobrovolnik" onclick="pickRole(this)">
-        <span class="ico">🤝</span>
-        <div><div class="lbl">Dobrovolník</div><div class="desc">Pomáhám při záchranných akcích</div></div>
+        <span class="ico">🤝</span><div><div class="lbl">Dobrovolník</div><div class="desc">Pomáhám při záchranných akcích</div></div>
       </button>
       <button class="role-btn" data-role="zacatecnik" onclick="pickRole(this)">
-        <span class="ico">🌱</span>
-        <div><div class="lbl">Začátečník</div><div class="desc">Teprve začínám, chci se zapojit</div></div>
+        <span class="ico">🌱</span><div><div class="lbl">Začátečník</div><div class="desc">Teprve začínám, chci se zapojit</div></div>
       </button>
     </div>
-    <div class="hint">Lze kdykoli změnit v Profilu</div>
+    <div class="screen-hint">Lze kdykoli změnit v Profilu</div>
   </div>
 </div>
 
-<!-- ══════════ ONBOARDING: DISTRICT ══════════ -->
+<!-- ═══════════ ONBOARDING: DISTRICT ═══════════ -->
 <div id="s-district" class="screen hidden">
-  <div class="logo-wrap"><div class="logo-ico">🦌</div><div class="logo-title">FawnGuard</div></div>
-  <div class="ob-card">
+  <div class="logo-block">
+    <div class="logo-img"><img src="icons/icon-192.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="logo-img-fallback" style="display:none">🦌</span></div>
+    <div class="logo-name">FawnGuard</div>
+  </div>
+  <div class="auth-card">
     <div class="dots"><div class="dot done"></div><div class="dot on"></div><div class="dot"></div></div>
-    <div class="ob-title">Tvůj okres</div>
-    <div class="dist-grid" id="dist-grid">
+    <div class="screen-title">Tvůj okres</div>
+    <div class="dist-grid">
       <button class="dist-btn" data-d="Plzeň-město"  onclick="pickDistrict(this)">Plzeň-město</button>
       <button class="dist-btn" data-d="Plzeň-jih"    onclick="pickDistrict(this)">Plzeň-jih</button>
       <button class="dist-btn" data-d="Plzeň-sever"  onclick="pickDistrict(this)">Plzeň-sever</button>
@@ -537,61 +658,66 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
       <button class="dist-btn" data-d="Tachov"       onclick="pickDistrict(this)">Tachov</button>
       <button class="dist-btn" data-d="Rokycany"     onclick="pickDistrict(this)">Rokycany</button>
     </div>
-    <div class="hint">Lze kdykoli změnit v Profilu</div>
+    <div class="screen-hint">Lze kdykoli změnit v Profilu</div>
   </div>
 </div>
 
-<!-- ══════════ ONBOARDING: AUTH ══════════ -->
+<!-- ═══════════ ONBOARDING: AUTH ═══════════ -->
 <div id="s-auth" class="screen hidden">
-  <div class="logo-wrap"><div class="logo-ico">🦌</div><div class="logo-title">FawnGuard</div><div class="logo-sub">Ochrana srnčat při sečení</div></div>
-  <div class="ob-card">
+  <div class="logo-block">
+    <div class="logo-img"><img src="icons/icon-192.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="logo-img-fallback" style="display:none">🦌</span></div>
+    <div class="logo-name">FawnGuard</div>
+    <div class="logo-sub">Ochrana srnčat při sečení</div>
+  </div>
+  <div class="auth-card">
     <div class="dots"><div class="dot done"></div><div class="dot done"></div><div class="dot on"></div></div>
     <div class="tabs">
       <button class="tab on" id="t-login" onclick="authTab('login')">Přihlásit se</button>
-      <button class="tab" id="t-reg" onclick="authTab('reg')">Registrovat se</button>
+      <button class="tab"    id="t-reg"   onclick="authTab('reg')">Registrovat se</button>
     </div>
-    <!-- Login -->
     <div id="a-login">
-      <div class="err" id="lerr"></div>
+      <div class="err-msg" id="lerr"></div>
       <div class="fg"><label>Uživatelské jméno</label><input id="l-u" type="text" placeholder="tvoje jméno" autocomplete="username"></div>
       <div class="fg"><label>Heslo</label><input id="l-p" type="password" placeholder="••••••••" autocomplete="current-password"></div>
-      <button class="btn bp" onclick="doLogin()">Přihlásit se</button>
+      <button class="btn btn-p" id="btn-login" onclick="doLogin()">Přihlásit se</button>
     </div>
-    <!-- Register -->
     <div id="a-reg" class="hidden">
-      <div class="info-box">ℹ️&nbsp; Registrace uloží tvůj výběr role a okresu.</div>
-      <div class="err" id="rerr"></div>
+      <div class="info-box">ℹ️ Registrace uloží tvoji roli a okres do profilu.</div>
+      <div class="err-msg" id="rerr"></div>
       <div class="fg"><label>Uživatelské jméno</label><input id="r-u" type="text" placeholder="unikátní jméno" autocomplete="username"></div>
       <div class="fg"><label>Heslo</label><input id="r-p" type="password" placeholder="min. 5 znaků" autocomplete="new-password"></div>
       <div class="fg"><label>Potvrzení hesla</label><input id="r-p2" type="password" placeholder="zopakuj heslo" autocomplete="new-password"></div>
-      <button class="btn bp" onclick="doRegister()">Vytvořit účet</button>
+      <button class="btn btn-p" id="btn-reg" onclick="doRegister()">Vytvořit účet</button>
     </div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════
+<!-- ═══════════════════════════════════════════
      MAIN APP
-══════════════════════════════════════ -->
+═══════════════════════════════════════════ -->
 <div id="main-app" class="hidden">
 
   <!-- Top bar -->
   <header class="topbar">
-    <div style="display:flex;align-items:center">
-      <span class="tb-logo">🦌 FawnGuard</span>
+    <div class="tb-left">
+      <div class="tb-logo-img">
+        <img src="icons/icon-192.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <span class="tb-logo-fallback" style="display:none">🦌</span>
+      </div>
+      <span class="tb-title">FawnGuard</span>
       <span class="tb-badge" id="tb-badge"></span>
     </div>
     <div class="tb-right">
-      <button class="avatar" id="tb-av" onclick="goTo('profile')">?</button>
+      <button class="avatar-btn" id="tb-av" onclick="goTo('profile')">?</button>
     </div>
   </header>
 
-  <!-- Scrollable content -->
+  <!-- Pages -->
   <div class="page-wrap">
 
-    <!-- ── FEED ── -->
+    <!-- FEED -->
     <div id="p-feed" class="page active">
-      <div class="ph"><h1>Nástěnka</h1></div>
-      <!-- Create form (admin + moderator) -->
+      <div class="ph"><h1>🏠 Nástěnka</h1></div>
       <div id="create-sec" class="hidden">
         <div class="create-card">
           <div class="create-title" id="create-ttl">Nový příspěvek</div>
@@ -599,8 +725,8 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
             <button class="tab on" id="tc-ev"   onclick="setCreateType('event')">📅 Akce</button>
             <button class="tab"    id="tc-post"  onclick="setCreateType('post')">📢 Příspěvek</button>
           </div>
-          <div class="err" id="cf-err"></div>
-          <div class="fg"><label>Název / Nadpis *</label><input id="cf-title" type="text" placeholder="Záchranná akce – Klatovy…"></div>
+          <div class="err-msg" id="cf-err"></div>
+          <div class="fg"><label>Název *</label><input id="cf-title" type="text" placeholder="Záchranná akce – Klatovy…"></div>
           <div class="fg"><label>Popis</label><textarea id="cf-body" rows="3" placeholder="Detaily…"></textarea></div>
           <div id="ev-fields">
             <div class="form-row">
@@ -621,75 +747,61 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
             <div class="fg">
               <label>Kapacita (Piloti / Dobrovolníci / Začátečníci)</label>
               <div class="cap-row">
-                <div><div style="font-size:.74rem;color:var(--text3);margin-bottom:4px">🚁 Piloti</div><input class="fg" style="margin:0" type="number" id="cf-cp" min="0" value="5"></div>
-                <div><div style="font-size:.74rem;color:var(--text3);margin-bottom:4px">🤝 Dobro.</div><input class="fg" style="margin:0" type="number" id="cf-cd" min="0" value="10"></div>
-                <div><div style="font-size:.74rem;color:var(--text3);margin-bottom:4px">🌱 Zač.</div><input class="fg" style="margin:0" type="number" id="cf-cz" min="0" value="5"></div>
+                <div><div class="cap-lbl-sm">🚁 Piloti</div><input class="fg" style="margin:0" type="number" id="cf-cp" min="0" value="5"></div>
+                <div><div class="cap-lbl-sm">🤝 Dobro.</div><input class="fg" style="margin:0" type="number" id="cf-cd" min="0" value="10"></div>
+                <div><div class="cap-lbl-sm">🌱 Zač.</div><input class="fg" style="margin:0" type="number" id="cf-cz" min="0" value="5"></div>
               </div>
             </div>
           </div>
           <div style="display:flex;gap:9px;flex-wrap:wrap">
-            <button class="btn bp" id="cf-submit" onclick="submitPost()" style="flex:1;min-width:110px">Zveřejnit</button>
-            <button class="btn bs" id="cf-cancel" onclick="cancelEdit()" style="display:none">Zrušit</button>
+            <button class="btn btn-p" id="cf-submit" onclick="submitPost()" style="flex:1;min-width:110px">Zveřejnit</button>
+            <button class="btn btn-s" id="cf-cancel"  onclick="cancelEdit()" style="display:none;width:auto">Zrušit</button>
           </div>
         </div>
       </div>
       <div id="feed-list" class="feed"></div>
     </div>
 
-    <!-- ── CONTACTS ── -->
+    <!-- CONTACTS -->
     <div id="p-contacts" class="page">
-      <div class="ph">
-        <h1>🚜 Adresář</h1>
-        <button class="btn ba bsm" onclick="openContactModal()" style="width:auto">+ Přidat</button>
-      </div>
-      <input class="search" type="text" id="ct-search" placeholder="🔍 Hledat…" oninput="renderContacts()">
+      <div class="ph"><h1>🚜 Adresář</h1><button class="btn btn-p btn-sm" onclick="openContactModal()" style="width:auto">+ Přidat</button></div>
+      <input class="search-box" type="text" id="ct-search" placeholder="🔍 Hledat…" oninput="renderContacts()">
       <div id="ct-list" class="ct-list"></div>
     </div>
 
-    <!-- ── LINKS / GUIDES ── -->
+    <!-- LINKS -->
     <div id="p-links" class="page">
       <div class="ph"><h1>📚 Návody</h1></div>
-      <div class="slabel">Sociální sítě spolku</div>
+      <div class="sec-label">Sociální sítě spolku</div>
       <div class="links-grid">
-        <a href="https://www.instagram.com/" target="_blank" class="lcard"><div class="lc-ico">📸</div><div class="lc-title">Instagram</div><div class="lc-desc">Fotky z akcí a aktuality</div></a>
-        <a href="https://www.facebook.com/"  target="_blank" class="lcard"><div class="lc-ico">👍</div><div class="lc-title">Facebook</div><div class="lc-desc">Skupiny a události spolku</div></a>
-        <a href="https://wa.me/"             target="_blank" class="lcard"><div class="lc-ico">💬</div><div class="lc-title">WhatsApp</div><div class="lc-desc">Operativní skupina dobrovolníků</div></a>
-        <a href="https://www.youtube.com/"   target="_blank" class="lcard"><div class="lc-ico">▶️</div><div class="lc-title">YouTube</div><div class="lc-desc">Videa ze záchranných akcí</div></a>
+        <a href="https://www.instagram.com/" target="_blank" class="lcard"><div class="lc-ico">📸</div><div class="lc-title">Instagram</div><div class="lc-desc">Fotky z akcí</div></a>
+        <a href="https://www.facebook.com/"  target="_blank" class="lcard"><div class="lc-ico">👍</div><div class="lc-title">Facebook</div><div class="lc-desc">Skupiny a události</div></a>
+        <a href="https://wa.me/"             target="_blank" class="lcard"><div class="lc-ico">💬</div><div class="lc-title">WhatsApp</div><div class="lc-desc">Operativní skupina</div></a>
+        <a href="https://www.youtube.com/"   target="_blank" class="lcard"><div class="lc-ico">▶️</div><div class="lc-title">YouTube</div><div class="lc-desc">Videa ze záchran</div></a>
       </div>
-      <div class="slabel">Jak se zapojit</div>
+      <div class="sec-label">Jak se zapojit</div>
       <div class="links-grid">
-        <div class="lcard" onclick="showGuide('start')"><div class="lc-ico">🦌</div><div class="lc-title">Jak začít jako dobrovolník</div><div class="lc-desc">Registrace, co s sebou, jak to funguje</div></div>
-        <div class="lcard" onclick="showGuide('drone')"><div class="lc-ico">🚁</div><div class="lc-title">Průkaz pilota dronu</div><div class="lc-desc">Oprávnění A1/A2/A3, zkouška CAA</div></div>
-        <div class="lcard" onclick="showGuide('thermal')"><div class="lc-ico">🌡️</div><div class="lc-title">Termovize a záchrana</div><div class="lc-desc">Jak funguje noční přelet</div></div>
-        <a href="https://www.caa.cz/" target="_blank" class="lcard"><div class="lc-ico">🏛️</div><div class="lc-title">CAA – Letecký úřad</div><div class="lc-desc">Legislativa pro drony v ČR</div></a>
-        <a href="https://mapy.cz/" target="_blank" class="lcard"><div class="lc-ico">🗺️</div><div class="lc-title">Mapy.cz</div><div class="lc-desc">Plánování tras a sdílení polohy</div></a>
-        <a href="https://www.myslivost.cz/" target="_blank" class="lcard"><div class="lc-ico">🌿</div><div class="lc-title">Myslivost.cz</div><div class="lc-desc">Ochrana zvěře v ČR</div></a>
+        <div class="lcard" onclick="showGuide('start')"><div class="lc-ico">🦌</div><div class="lc-title">Jak začít</div><div class="lc-desc">Registrace a první akce</div></div>
+        <div class="lcard" onclick="showGuide('drone')"><div class="lc-ico">🚁</div><div class="lc-title">Průkaz pilota</div><div class="lc-desc">CAA oprávnění A1/A2/A3</div></div>
+        <div class="lcard" onclick="showGuide('thermal')"><div class="lc-ico">🌡️</div><div class="lc-title">Termovize</div><div class="lc-desc">Jak funguje přelet</div></div>
+        <a href="https://www.caa.cz/" target="_blank" class="lcard"><div class="lc-ico">🏛️</div><div class="lc-title">CAA – Letecký úřad</div><div class="lc-desc">Legislativa pro drony</div></a>
       </div>
     </div>
 
-    <!-- ── MEMBERS ── -->
+    <!-- MEMBERS -->
     <div id="p-users" class="page">
-      <div class="ph"><h1>👥 Členové</h1></div>
-      <div class="sec">
-        <div class="sec-title">Registrovaní uživatelé</div>
-        <div style="overflow-x:auto">
-          <table class="utbl" id="utbl">
-            <thead><tr><th>Uživatel</th><th>Role</th><th>Okres</th><th>Stav</th><th id="utbl-ah"></th></tr></thead>
-            <tbody id="utbl-body"></tbody>
-          </table>
-        </div>
-      </div>
+      <div class="ph"><h1>👥 Komunita</h1></div>
+      <div id="user-cards" class="user-cards"></div>
     </div>
 
-    <!-- ── PROFILE ── -->
+    <!-- PROFILE -->
     <div id="p-profile" class="page">
-      <div class="ph"><h1>Profil</h1></div>
       <div class="prof-head">
-        <div class="prof-av" id="pav">?</div>
+        <div class="prof-av-large" id="pav">?</div>
         <div><div class="prof-name" id="pname">—</div><div class="prof-meta" id="pmeta">—</div></div>
       </div>
       <div class="sec">
-        <div class="sec-title">Upravit profil</div>
+        <div class="sec-title">✏️ Upravit profil</div>
         <div class="fg"><label>Moje role</label>
           <select id="p-role">
             <option value="pilot">🚁 Pilot</option>
@@ -703,47 +815,47 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
             <option>Domažlice</option><option>Klatovy</option><option>Tachov</option><option>Rokycany</option>
           </select>
         </div>
-        <button class="btn bp" onclick="saveProfile()" style="max-width:180px">Uložit</button>
+        <button class="btn btn-p" onclick="saveProfile()" style="max-width:180px">Uložit</button>
       </div>
       <div class="sec">
-        <div class="sec-title">Bezpečnost</div>
-        <button class="btn bd bsm" onclick="doLogout()">Odhlásit se</button>
+        <div class="sec-title">🔐 Bezpečnost</div>
+        <button class="btn btn-d btn-sm" onclick="doLogout()" style="width:auto">Odhlásit se</button>
       </div>
     </div>
 
-    <!-- ── SETTINGS ── -->
+    <!-- SETTINGS -->
     <div id="p-settings" class="page">
-      <div class="ph"><h1>⚙ Nastavení</h1></div>
+      <div class="ph"><h1>⚙️ Nastavení</h1></div>
       <div class="sec">
         <div class="sec-title">🔔 Oznámení</div>
         <div class="tog-row">
           <div class="tog-lbl">Všechna oznámení<small>Každá nová akce v ČR</small></div>
           <label class="tog"><input type="checkbox" id="n-all" onchange="saveNotif()"><span class="tog-sl"></span></label>
         </div>
-        <div class="divider"></div>
-        <div style="font-size:.78rem;color:var(--text3);margin-bottom:8px">Nebo konkrétní okresy:</div>
+        <hr class="divider">
+        <div style="font-size:.8rem;color:var(--text3);margin-bottom:8px">Nebo konkrétní okresy:</div>
         <div class="nd-grid" id="n-dists"></div>
       </div>
     </div>
 
   </div><!-- /page-wrap -->
 
-  <!-- Bottom navigation -->
-  <nav class="bottom-nav" id="bnav">
-    <button class="nav-item on" data-p="feed"     onclick="goTo('feed')">
-      <span class="ni">🏠</span><span class="nl">Nástěnka</span>
+  <!-- Bottom Nav -->
+  <nav class="bottom-nav">
+    <button class="nav-btn on" data-p="feed"     onclick="goTo('feed')">
+      <span class="ms">home</span><span class="nl">Nástěnka</span>
     </button>
-    <button class="nav-item"    data-p="contacts" onclick="goTo('contacts')">
-      <span class="ni">🚜</span><span class="nl">Adresář</span>
+    <button class="nav-btn"    data-p="contacts" onclick="goTo('contacts')">
+      <span class="ms">agriculture</span><span class="nl">Adresář</span>
     </button>
-    <button class="nav-item"    data-p="links"    onclick="goTo('links')">
-      <span class="ni">📚</span><span class="nl">Návody</span>
+    <button class="nav-btn"    data-p="links"    onclick="goTo('links')">
+      <span class="ms">menu_book</span><span class="nl">Návody</span>
     </button>
-    <button class="nav-item"    data-p="users"    onclick="goTo('users')">
-      <span class="ni">👥</span><span class="nl">Členové</span>
+    <button class="nav-btn"    data-p="users"    onclick="goTo('users')">
+      <span class="ms">group</span><span class="nl">Komunita</span>
     </button>
-    <button class="nav-item"    data-p="profile"  onclick="goTo('profile')">
-      <span class="ni">👤</span><span class="nl">Profil</span>
+    <button class="nav-btn"    data-p="profile"  onclick="goTo('profile')">
+      <span class="ms">person</span><span class="nl">Profil</span>
     </button>
   </nav>
 
@@ -754,7 +866,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 
 <!-- MODAL -->
 <div id="overlay" class="overlay hidden" onclick="overlayBg(event)">
-  <div class="modal" id="modal">
+  <div class="modal">
     <div class="modal-hdr">
       <span class="modal-ttl" id="m-title">—</span>
       <button class="modal-x" onclick="closeModal()">✕</button>
@@ -763,702 +875,777 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   </div>
 </div>
 
+<!-- ═══════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════ -->
 <script>
-if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   ★ SUPABASE CONFIG — doplň své údaje ★
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+const SUPABASE_URL      = 'https://TVUJ-PROJEKT.supabase.co';
+const SUPABASE_ANON_KEY = 'TVUJ-ANON-KEY';
 
-/* ══════════════════════════════════════
-   ★ CONFIG – sem přidej adminy / mody ★
-══════════════════════════════════════ */
-const ADMINS     = ['admin','jan_admin'];
-const MODERATORS = ['moderator','jakub']; // ← tvoje jméno zde
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   ★ ADMINS / MODERÁTOŘI — uživatelská jména ★
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+const ADMINS     = ['admin', 'jan_admin'];
+const MODERATORS = ['moderator', 'jirka'];   // ← tvoje jméno zde
 
-/* ══════════════════════════════════════
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   INIT SUPABASE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    CONSTANTS
-══════════════════════════════════════ */
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 const DISTRICTS = ['Plzeň-město','Plzeň-jih','Plzeň-sever','Domažlice','Klatovy','Tachov','Rokycany'];
-const RL = {pilot:'🚁 Pilot',dobrovolnik:'🤝 Dobrovolník',zacatecnik:'🌱 Začátečník',admin:'⭐ Admin',moderator:'🛡️ Mod'};
-const TO_DURATION = 24*60*60*1000;
+const RL = { pilot:'🚁 Pilot', dobrovolnik:'🤝 Dobrovolník', zacatecnik:'🌱 Začátečník', admin:'⭐ Admin', moderator:'🛡️ Mod' };
+const TO_DURATION = 24 * 60 * 60 * 1000;
 
-/* ══════════════════════════════════════
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    STATE
-══════════════════════════════════════ */
-let ob = {role:null,district:null};
-let CU = null; // current user
-let editPostId = null;
-let editCtId   = null;
-let createType = 'event';
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+let ob = { role: null, district: null };
+let CU = null;          // current user profile
+let editPostId   = null;
+let editCtId     = null;
+let createType   = 'event';
 
-/* ══════════════════════════════════════
-   STORAGE — single source of truth
-   KEY: fg_users  → object { username: userObj }
-   KEY: fg_posts  → array
-   KEY: fg_contacts → array
-   KEY: fg_session → string (username)
-══════════════════════════════════════ */
-function lsGet(k){ try{return JSON.parse(localStorage.getItem(k))}catch{return null} }
-function lsSet(k,v){ try{localStorage.setItem(k,JSON.stringify(v))}catch(e){console.warn('LS write fail',e)} }
-
-function allUsers()    { return lsGet('fg_users')    || {} }
-function saveUsers(u)  { lsSet('fg_users',u) }
-function getUser(n)    { return allUsers()[n] || null }
-function saveOneUser(u){ const all=allUsers(); all[u.username]=u; saveUsers(all) }
-
-function allPosts()    { return lsGet('fg_posts')    || [] }
-function savePosts(p)  { lsSet('fg_posts',p) }
-
-function allContacts() { return lsGet('fg_contacts') || [] }
-function saveContacts(c){ lsSet('fg_contacts',c) }
-
-/* ══════════════════════════════════════
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    HELPERS
-══════════════════════════════════════ */
-function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,6) }
-function fmtD(d){ return d ? new Date(d+'T00:00:00').toLocaleDateString('cs-CZ') : '' }
-function fmtTs(t){ return new Date(t).toLocaleString('cs-CZ',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) }
-function esc(s){ return s?String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'):'' }
-function sysRole(u){ if(ADMINS.includes(u)) return 'admin'; if(MODERATORS.includes(u)) return 'moderator'; return null }
-function isAdmin(u){ return (u||CU).systemRole==='admin' }
-function isMod(u){ return (u||CU).systemRole==='moderator' }
-function canCreate(){ return isAdmin()||isMod() } // both can create/edit/delete posts
-function canManageContacts(){ return true } // everyone can manage contacts per new requirement
-function hash(s){ let h=0x12345678; for(let i=0;i<s.length;i++){h=Math.imul(h^s.charCodeAt(i),0x9e3779b9);h=(h<<13)|(h>>>19)} return(h>>>0).toString(16) }
-function showErr(id,msg){ const e=document.getElementById(id); e.textContent=msg; e.classList.add('show') }
-function hideErr(id){ document.getElementById(id).classList.remove('show') }
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function esc(s)   { return s ? String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') : ''; }
+function uid()    { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+function fmtD(d)  { return d ? new Date(d + 'T00:00:00').toLocaleDateString('cs-CZ') : ''; }
+function fmtTs(t) { return new Date(t).toLocaleString('cs-CZ', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' }); }
+function hash(s)  { let h = 0x12345678; for (let i = 0; i < s.length; i++) { h = Math.imul(h ^ s.charCodeAt(i), 0x9e3779b9); h = (h << 13) | (h >>> 19); } return (h >>> 0).toString(16); }
+function sysRole(u)    { if (ADMINS.includes(u)) return 'admin'; if (MODERATORS.includes(u)) return 'moderator'; return null; }
+function isAdmin()     { return CU?.systemRole === 'admin'; }
+function isMod()       { return CU?.systemRole === 'moderator'; }
+function canCreate()   { return isAdmin() || isMod(); }
+function showErr(id, msg) { const e = document.getElementById(id); e.textContent = msg; e.classList.add('show'); }
+function hideErr(id)      { document.getElementById(id).classList.remove('show'); }
+function lsGet(k)  { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } }
+function lsSet(k,v){ localStorage.setItem(k, JSON.stringify(v)); }
+function loading(show) { document.getElementById('loading-overlay').style.display = show ? 'flex' : 'none'; }
 
-/* ══════════════════════════════════════
-   AUTO-CLEANUP: delete events > 7 days
-══════════════════════════════════════ */
-function cleanOldEvents(){
-  const now=Date.now(), week=7*864e5;
-  const posts=allPosts();
-  const fresh=posts.filter(p=>{
-    if(p.type!=='event')return true;
-    if(!p.date)return true;
-    return (now - new Date(p.date+'T23:59:59').getTime()) < week;
-  });
-  if(fresh.length<posts.length) savePosts(fresh);
-}
-
-/* ══════════════════════════════════════
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    BOOT
-══════════════════════════════════════ */
-function boot(){
-  cleanOldEvents();
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+async function boot() {
+  loading(true);
   const sess = lsGet('fg_session');
-  if(sess){
-    const u = getUser(sess);
-    if(u){
-      if(u.timeoutUntil && Date.now()<u.timeoutUntil){
-        toast('Tvůj účet je dočasně omezen.','err');
-        lsSet('fg_session',null);
-      } else {
-        u.systemRole = sysRole(u.username);
-        CU = u;
-        launchApp();
+  if (sess) {
+    // Ověř session proti Supabase
+    const { data, error } = await db.from('profiles').select('*').eq('username', sess).single();
+    if (data && !error) {
+      data.systemRole = sysRole(data.username);
+      if (data.timeout_until && Date.now() < new Date(data.timeout_until).getTime()) {
+        toast('Tvůj účet je dočasně omezen.', 'err');
+        lsSet('fg_session', null);
+        loading(false);
+        showS('s-role');
         return;
       }
-    } else {
-      lsSet('fg_session',null);
+      CU = data;
+      loading(false);
+      launchApp();
+      return;
     }
+    lsSet('fg_session', null);
   }
+  loading(false);
   showS('s-role');
 }
 
-function showS(id){
-  ['s-role','s-district','s-auth','main-app'].forEach(s=>
-    document.getElementById(s).classList.toggle('hidden',s!==id));
+function showS(id) {
+  ['s-role','s-district','s-auth','main-app'].forEach(s =>
+    document.getElementById(s).classList.toggle('hidden', s !== id));
 }
 
-function launchApp(){
+function launchApp() {
   showS('main-app');
   updateTopbar();
   buildNotif();
   goTo('feed');
 }
 
-/* ══════════════════════════════════════
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    ONBOARDING
-══════════════════════════════════════ */
-function pickRole(btn){
-  document.querySelectorAll('#s-role .role-btn').forEach(b=>b.classList.remove('sel'));
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function pickRole(btn) {
+  document.querySelectorAll('#s-role .role-btn').forEach(b => b.classList.remove('sel'));
   btn.classList.add('sel');
   ob.role = btn.dataset.role;
-  setTimeout(()=>showS('s-district'),250);
+  setTimeout(() => showS('s-district'), 250);
 }
-function pickDistrict(btn){
-  document.querySelectorAll('#dist-grid .dist-btn').forEach(b=>b.classList.remove('sel'));
+function pickDistrict(btn) {
+  document.querySelectorAll('#s-district .dist-btn').forEach(b => b.classList.remove('sel'));
   btn.classList.add('sel');
   ob.district = btn.dataset.d;
-  setTimeout(()=>showS('s-auth'),250);
+  setTimeout(() => showS('s-auth'), 250);
 }
 
-/* ══════════════════════════════════════
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    AUTH
-══════════════════════════════════════ */
-function authTab(t){
-  document.getElementById('a-login').classList.toggle('hidden',t!=='login');
-  document.getElementById('a-reg').classList.toggle('hidden',t!=='reg');
-  document.getElementById('t-login').classList.toggle('on',t==='login');
-  document.getElementById('t-reg').classList.toggle('on',t==='reg');
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function authTab(t) {
+  document.getElementById('a-login').classList.toggle('hidden', t !== 'login');
+  document.getElementById('a-reg').classList.toggle('hidden', t !== 'reg');
+  document.getElementById('t-login').classList.toggle('on', t === 'login');
+  document.getElementById('t-reg').classList.toggle('on', t === 'reg');
 }
 
-function doLogin(){
+async function doLogin() {
   hideErr('lerr');
-  const u=document.getElementById('l-u').value.trim().toLowerCase();
-  const p=document.getElementById('l-p').value;
-  const usr=getUser(u);
-  if(!usr||usr.passwordHash!==hash(p)) return showErr('lerr','Nesprávné jméno nebo heslo.');
-  if(usr.timeoutUntil&&Date.now()<usr.timeoutUntil){
-    return showErr('lerr',`Účet omezen do ${new Date(usr.timeoutUntil).toLocaleString('cs-CZ',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}.`);
-  }
-  usr.systemRole=sysRole(usr.username);
-  saveOneUser(usr);
-  CU=usr;
-  lsSet('fg_session',u);
-  toast('Vítej zpět, '+u+'! 🦌','ok');
+  const username = document.getElementById('l-u').value.trim().toLowerCase();
+  const pw = document.getElementById('l-p').value;
+  if (!username || !pw) return showErr('lerr', 'Vyplň jméno i heslo.');
+  const btn = document.getElementById('btn-login');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>';
+  const { data, error } = await db.from('profiles').select('*').eq('username', username).single();
+  btn.disabled = false; btn.textContent = 'Přihlásit se';
+  if (error || !data) return showErr('lerr', 'Uživatel nenalezen.');
+  if (data.password_hash !== hash(pw)) return showErr('lerr', 'Nesprávné heslo.');
+  if (data.timeout_until && Date.now() < new Date(data.timeout_until).getTime())
+    return showErr('lerr', `Účet omezen do ${new Date(data.timeout_until).toLocaleString('cs-CZ', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}.`);
+  data.systemRole = sysRole(data.username);
+  CU = data;
+  lsSet('fg_session', username);
+  toast('Vítej zpět, ' + username + '! 🦌', 'ok');
   launchApp();
 }
 
-function doRegister(){
+async function doRegister() {
   hideErr('rerr');
-  const u=document.getElementById('r-u').value.trim().toLowerCase();
-  const p=document.getElementById('r-p').value;
-  const p2=document.getElementById('r-p2').value;
-  if(!u||u.length<3) return showErr('rerr','Jméno musí mít alespoň 3 znaky.');
-  if(!/^[a-z0-9_]+$/.test(u)) return showErr('rerr','Jen písmena a-z, číslice, podtržítko.');
-  if(p.length<5) return showErr('rerr','Heslo min. 5 znaků.');
-  if(p!==p2) return showErr('rerr','Hesla se neshodují.');
-  if(!ob.role||!ob.district) return showErr('rerr','Vrať se a zvol roli a okres.');
-  const users=allUsers();
-  if(users[u]) return showErr('rerr','Toto jméno je již obsazeno.');
-  const newUser={
-    username:u, passwordHash:hash(p),
-    role:ob.role, district:ob.district,
-    systemRole:sysRole(u),
-    notifAll:false, notifDistricts:[],
-    createdAt:Date.now(),
+  const username = document.getElementById('r-u').value.trim().toLowerCase();
+  const pw  = document.getElementById('r-p').value;
+  const pw2 = document.getElementById('r-p2').value;
+  if (!username || username.length < 3)  return showErr('rerr', 'Jméno musí mít alespoň 3 znaky.');
+  if (!/^[a-z0-9_]+$/.test(username))   return showErr('rerr', 'Jen písmena a–z, číslice, podtržítko.');
+  if (pw.length < 5)                     return showErr('rerr', 'Heslo min. 5 znaků.');
+  if (pw !== pw2)                        return showErr('rerr', 'Hesla se neshodují.');
+  if (!ob.role || !ob.district)          return showErr('rerr', 'Vrať se a zvol roli a okres.');
+  const btn = document.getElementById('btn-reg');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>';
+  // Check uniqueness
+  const { data: existing } = await db.from('profiles').select('id').eq('username', username).single();
+  if (existing) { btn.disabled = false; btn.textContent = 'Vytvořit účet'; return showErr('rerr', 'Toto jméno je již obsazeno.'); }
+  const newProfile = {
+    username, password_hash: hash(pw),
+    role: ob.role, district: ob.district,
+    notif_all: false, notif_districts: [],
+    created_at: new Date().toISOString(),
   };
-  users[u]=newUser;
-  saveUsers(users);
-  CU=newUser;
-  lsSet('fg_session',u);
-  toast('Účet vytvořen! Vítej 🦌','ok');
+  const { data, error } = await db.from('profiles').insert([newProfile]).select().single();
+  btn.disabled = false; btn.textContent = 'Vytvořit účet';
+  if (error) return showErr('rerr', 'Chyba uložení: ' + error.message);
+  data.systemRole = sysRole(data.username);
+  CU = data;
+  lsSet('fg_session', username);
+  toast('Účet vytvořen! Vítej 🦌', 'ok');
   launchApp();
 }
 
-function doLogout(){
-  lsSet('fg_session',null);
-  CU=null; ob={role:null,district:null};
-  document.querySelectorAll('.role-btn,.dist-btn').forEach(b=>b.classList.remove('sel'));
+async function doLogout() {
+  lsSet('fg_session', null);
+  CU = null; ob = { role: null, district: null };
+  document.querySelectorAll('.role-btn,.dist-btn').forEach(b => b.classList.remove('sel'));
   showS('s-role');
-  toast('Odhlášen/a.','info');
+  toast('Odhlášen/a.', 'info');
 }
 
-/* ══════════════════════════════════════
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    TOPBAR
-══════════════════════════════════════ */
-function updateTopbar(){
-  const u=CU; if(!u)return;
-  document.getElementById('tb-av').textContent=u.username.slice(0,2).toUpperCase();
-  const b=document.getElementById('tb-badge');
-  if(u.systemRole==='admin'){b.textContent='⭐ Admin';b.className='tb-badge admin';}
-  else if(u.systemRole==='moderator'){b.textContent='🛡️ Mod';b.className='tb-badge mod';}
-  else{b.textContent=RL[u.role]||u.role;b.className='tb-badge';}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function updateTopbar() {
+  if (!CU) return;
+  document.getElementById('tb-av').textContent = CU.username.slice(0,2).toUpperCase();
+  const b = document.getElementById('tb-badge');
+  if      (CU.systemRole === 'admin')     { b.textContent = '⭐ Admin'; b.className = 'tb-badge admin'; }
+  else if (CU.systemRole === 'moderator') { b.textContent = '🛡️ Mod';  b.className = 'tb-badge mod'; }
+  else { b.textContent = RL[CU.role] || CU.role; b.className = 'tb-badge'; }
 }
 
-/* ══════════════════════════════════════
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    NAVIGATION
-══════════════════════════════════════ */
-function goTo(page){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('on'));
-  document.getElementById('p-'+page).classList.add('active');
-  const nb=document.querySelector(`.nav-item[data-p="${page}"]`);
-  if(nb)nb.classList.add('on');
-  // scroll top
-  document.querySelector('.page-wrap').scrollTo(0,0);
-  if(page==='feed')     renderFeed();
-  if(page==='contacts') renderContacts();
-  if(page==='users')    renderUsers();
-  if(page==='profile')  renderProfile();
-  if(page==='settings') buildNotif();
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function goTo(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('on'));
+  document.getElementById('p-' + page).classList.add('active');
+  const nb = document.querySelector(`.nav-btn[data-p="${page}"]`);
+  if (nb) nb.classList.add('on');
+  document.querySelector('.page-wrap').scrollTo(0, 0);
+  if (page === 'feed')     renderFeed();
+  if (page === 'contacts') renderContacts();
+  if (page === 'users')    renderUsers();
+  if (page === 'profile')  renderProfile();
+  if (page === 'settings') buildNotif();
 }
 
-/* ══════════════════════════════════════
-   CREATE TYPE
-══════════════════════════════════════ */
-function setCreateType(t){
-  createType=t;
-  document.getElementById('tc-ev').classList.toggle('on',t==='event');
-  document.getElementById('tc-post').classList.toggle('on',t==='post');
-  document.getElementById('ev-fields').style.display=t==='event'?'':'none';
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   AUTO CLEANUP (events > 7 days)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+async function cleanOldEvents() {
+  const cutoff = new Date(Date.now() - 7 * 864e5).toISOString().split('T')[0];
+  await db.from('actions').delete().eq('type', 'event').lt('event_date', cutoff);
 }
 
-/* ══════════════════════════════════════
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    FEED
-══════════════════════════════════════ */
-function renderFeed(){
-  document.getElementById('create-sec').classList.toggle('hidden',!canCreate());
-  if(canCreate()) setCreateType(createType);
-  const posts=allPosts().slice().reverse();
-  const el=document.getElementById('feed-list');
-  if(!posts.length){ el.innerHTML='<div class="empty"><div class="ei">🌿</div><p>Zatím žádné příspěvky.<br>Adminisrátoři je mohou přidávat.</p></div>'; return; }
-  el.innerHTML=posts.map(postHTML).join('');
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+async function renderFeed() {
+  document.getElementById('create-sec').classList.toggle('hidden', !canCreate());
+  if (canCreate()) setCreateType(createType);
+  const el = document.getElementById('feed-list');
+  el.innerHTML = '<div class="empty"><div class="ei">⏳</div><p>Načítám příspěvky…</p></div>';
+  const { data: posts, error } = await db.from('actions').select('*, comments(*)').order('created_at', { ascending: false });
+  if (error) { el.innerHTML = `<div class="empty"><div class="ei">⚠️</div><p>Chyba: ${esc(error.message)}</p></div>`; return; }
+  if (!posts || !posts.length) { el.innerHTML = '<div class="empty"><div class="ei">🌿</div><p>Zatím žádné příspěvky.<br>Admini je mohou přidávat.</p></div>'; return; }
+  el.innerHTML = posts.map(postHTML).join('');
 }
 
-function postHTML(p){
-  const canEdit=canCreate();
-  const editBtns=canEdit?`<button class="btn ba bsm" onclick="startEditPost('${p.id}')">✏️</button><button class="btn bd bsm" onclick="deletePost('${p.id}')">🗑️</button>`:'';
+function postHTML(p) {
+  const canEdit = canCreate();
+  const editBtns = canEdit
+    ? `<button class="btn btn-a btn-icon btn-sm" onclick="startEditPost('${p.id}')"><span class="ms" style="font-size:18px">edit</span></button>
+       <button class="btn btn-d btn-icon btn-sm" onclick="deletePost('${p.id}')"><span class="ms" style="font-size:18px">delete</span></button>` : '';
 
-  let evHtml='';
-  if(p.type==='event'){
-    const navBtn=p.mapUrl?`<a href="${esc(p.mapUrl)}" target="_blank" class="map-btn">🗺️ Otevřít v Mapy.cz</a>`:'';
-    evHtml=`
+  let evHtml = '';
+  if (p.type === 'event') {
+    const navBtn = p.map_url
+      ? `<a href="${esc(p.map_url)}" target="_blank" class="map-btn"><span>🗺️</span> Otevřít v Mapy.cz</a>` : '';
+    evHtml = `
       <div class="ev-info">
-        ${p.date?`<div class="ev-row"><span class="ico">📅</span><span class="val">${fmtD(p.date)}</span></div>`:''}
-        ${p.time?`<div class="ev-row"><span class="ico">⏰</span><span class="val">${esc(p.time)}</span></div>`:''}
-        ${p.location?`<div class="ev-row"><span class="ico">📍</span><span class="val">${esc(p.location)}</span></div>`:''}
-        ${p.district?`<div class="ev-row"><span class="ico">🗺</span><span class="val">${esc(p.district)}</span></div>`:''}
+        ${p.event_date     ? `<div class="ev-row"><span class="ei">📅</span><span class="ev">${fmtD(p.event_date)}</span></div>` : ''}
+        ${p.event_time     ? `<div class="ev-row"><span class="ei">⏰</span><span class="ev">${esc(p.event_time)}</span></div>` : ''}
+        ${p.location_name  ? `<div class="ev-row"><span class="ei">📍</span><span class="ev">${esc(p.location_name)}</span></div>` : ''}
+        ${p.district       ? `<div class="ev-row"><span class="ei">🗺</span><span class="ev">${esc(p.district)}</span></div>` : ''}
       </div>
       ${navBtn}
       ${capHTML(p)}
       ${partsHTML(p)}
-      <div class="post-foot">${attendHTML(p)}</div>`;
+      <div style="margin-top:10px">${attendHTML(p)}</div>`;
   }
-
-  return `<div class="post ${p.type}" id="post-${p.id}">
-    <div class="post-top">
-      <div class="post-meta">
-        <span class="pbadge ${p.type==='event'?'pb-ev':'pb-post'}">${p.type==='event'?'Akce':'Příspěvek'}</span>
+  return `<div class="card" id="post-${p.id}">
+    <div class="post-header">
+      <div style="flex:1;min-width:0">
+        <span class="post-badge ${p.type === 'event' ? 'badge-ev' : 'badge-post'}">${p.type === 'event' ? 'Akce' : 'Příspěvek'}</span>
         <div class="post-title">${esc(p.title)}</div>
-        <div class="post-by">${esc(p.author)} · ${new Date(p.createdAt).toLocaleDateString('cs-CZ')}</div>
+        <div class="post-by">${esc(p.author_username)} · ${new Date(p.created_at).toLocaleDateString('cs-CZ')}</div>
       </div>
       <div class="post-btns">${editBtns}</div>
     </div>
-    ${p.body?`<div class="post-body">${esc(p.body)}</div>`:''}
+    ${p.body ? `<div class="post-body" style="margin-top:8px">${esc(p.body)}</div>` : ''}
     ${evHtml}
     ${cmtHTML(p)}
   </div>`;
 }
 
-function capHTML(p){
-  if(!p.capacity)return'';
-  const rs=[{k:'pilot',l:'🚁 Piloti'},{k:'dobrovolnik',l:'🤝 Dobro.'},{k:'zacatecnik',l:'🌱 Zač.'}];
-  const rows=rs.map(r=>{
-    const cap=p.capacity[r.k]||0; if(!cap)return'';
-    const cnt=(p.participants||[]).filter(x=>x.role===r.k).length;
-    const pct=Math.min(100,cap?Math.round(cnt/cap*100):0);
+function capHTML(p) {
+  const cap = p.capacity;
+  if (!cap) return '';
+  const parts = p.participants || [];
+  const rs = [{ k:'pilot', l:'🚁 Piloti' }, { k:'dobrovolnik', l:'🤝 Dobro.' }, { k:'zacatecnik', l:'🌱 Zač.' }];
+  const rows = rs.map(r => {
+    const c = cap[r.k] || 0; if (!c) return '';
+    const cnt = parts.filter(x => x.role === r.k).length;
+    const pct = Math.min(100, c ? Math.round(cnt / c * 100) : 0);
     return `<div class="cap-r">
       <span class="cap-name">${r.l}</span>
-      <div class="cap-track"><div class="cap-fill ${cnt>=cap?'full':''}" style="width:${pct}%"></div></div>
-      <span class="cap-num">${cnt}/${cap}</span>
+      <div class="cap-track"><div class="cap-fill ${cnt >= c ? 'full' : ''}" style="width:${pct}%"></div></div>
+      <span class="cap-num">${cnt}/${c}</span>
     </div>`;
   }).join('');
-  return rows?`<div class="cap-sec"><div class="cap-lbl">Obsazení</div><div class="cap-grid">${rows}</div></div>`:'';
+  return rows ? `<div class="cap-sec"><div class="cap-title">Obsazení</div><div class="cap-grid">${rows}</div></div>` : '';
 }
 
-function attendHTML(p){
-  if(canCreate())return''; // admin/mod don't attend
-  const att=(p.participants||[]).some(x=>x.username===CU.username);
-  if(att)return`<div class="att-on">✅ Zúčastňuji se</div>`;
-  const cap=p.capacity?p.capacity[CU.role]:null;
-  const cnt=(p.participants||[]).filter(x=>x.role===CU.role).length;
-  if(cap!==null&&cap!==undefined&&cnt>=cap)return`<div class="att-full">Kapacita naplněna</div>`;
-  return`<button class="btn bp bsm" onclick="attend('${p.id}')" style="width:auto">Zúčastnit se</button>`;
+function attendHTML(p) {
+  if (canCreate()) return '';
+  const parts = p.participants || [];
+  const att = parts.some(x => x.username === CU.username);
+  if (att) return `<div class="att-on">✅ Zúčastňuji se</div>`;
+  const cap = p.capacity ? p.capacity[CU.role] : null;
+  const cnt = parts.filter(x => x.role === CU.role).length;
+  if (cap !== null && cap !== undefined && cnt >= cap) return `<div class="att-full">Kapacita naplněna</div>`;
+  return `<button class="btn btn-p btn-sm" onclick="attend('${p.id}')" style="width:auto">Zúčastnit se</button>`;
 }
 
-function partsHTML(p){
-  if(!p.participants||!p.participants.length)return'';
-  const chips=p.participants.map(x=>`<span class="pchip">${esc(x.username)}<span class="pchip-r">${(RL[x.role]||x.role).split(' ')[0]}</span></span>`).join('');
-  return`<div class="parts"><div class="parts-lbl">Přihlášení</div><div class="part-chips">${chips}</div></div>`;
+function partsHTML(p) {
+  const parts = p.participants;
+  if (!parts || !parts.length) return '';
+  const chips = parts.map(x => `<span class="pchip">${esc(x.username)}</span>`).join('');
+  return `<div class="parts"><div class="parts-lbl">Přihlášení</div><div class="part-chips">${chips}</div></div>`;
 }
 
-/* ══════════════════════════════════════
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    COMMENTS
-══════════════════════════════════════ */
-function cmtHTML(p){
-  const cmts=p.comments||[];
-  const list=cmts.map(c=>`<div class="cmt">
-    <div class="cmt-who"><strong>${esc(c.author)}</strong> (${esc(c.roleLabel)}) · ${fmtTs(c.ts)}</div>
-    <div class="cmt-txt">${esc(c.text)}</div>
-  </div>`).join('');
-  return`<div class="cmt-sec">
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function cmtHTML(p) {
+  const cmts = p.comments || [];
+  const canDel = (c) => CU.username === c.author_username || canCreate();
+  const list = cmts.map(c => `
+    <div class="cmt" id="cmt-${c.id}">
+      <div class="cmt-who">
+        <span><strong>${esc(c.author_username)}</strong> · ${fmtTs(c.created_at)}</span>
+        ${canDel(c) ? `<button class="btn btn-d btn-icon" style="width:28px;height:28px;font-size:14px" onclick="deleteComment('${c.id}','${p.id}')">✕</button>` : ''}
+      </div>
+      <div class="cmt-txt">${esc(c.body)}</div>
+    </div>`).join('');
+  return `<div class="cmt-sec">
     <div class="cmt-lbl">💬 Komentáře</div>
-    ${list?`<div class="cmt-list">${list}</div>`:'<div style="font-size:.78rem;color:var(--text3);margin-bottom:9px">Zatím žádné komentáře.</div>'}
+    ${list ? `<div class="cmt-list">${list}</div>` : '<div style="font-size:.8rem;color:var(--text3);margin-bottom:9px">Zatím žádné komentáře.</div>'}
     <div class="cmt-form">
       <textarea class="cmt-input" id="ci-${p.id}" maxlength="150" rows="2"
         placeholder="Vzkaz (max 150 znaků)…" oninput="updCC('${p.id}')"></textarea>
       <span class="cmt-chars" id="cc-${p.id}">150</span>
-      <button class="btn bs bsm" onclick="addComment('${p.id}')">Odeslat</button>
+      <button class="btn btn-p btn-sm" onclick="addComment('${p.id}')" style="width:auto">Odeslat</button>
     </div>
   </div>`;
 }
-function updCC(id){ const t=document.getElementById('ci-'+id),s=document.getElementById('cc-'+id); if(t&&s)s.textContent=150-t.value.length }
-function addComment(id){
-  const ta=document.getElementById('ci-'+id); if(!ta)return;
-  const txt=ta.value.trim();
-  if(!txt)return toast('Vzkaz je prázdný.','err');
-  const posts=allPosts(); const idx=posts.findIndex(p=>p.id===id); if(idx<0)return;
-  if(!posts[idx].comments)posts[idx].comments=[];
-  posts[idx].comments.push({id:uid(),author:CU.username,roleLabel:(RL[CU.role]||CU.role).replace(/^[^ ]+ /,''),text:txt,ts:Date.now()});
-  savePosts(posts); ta.value='';
-  const s=document.getElementById('cc-'+id); if(s)s.textContent='150';
-  renderFeed();
-  setTimeout(()=>{ const el=document.getElementById('post-'+id); if(el)el.scrollIntoView({block:'nearest'}) },60);
+
+function updCC(id) {
+  const t = document.getElementById('ci-' + id), s = document.getElementById('cc-' + id);
+  if (t && s) s.textContent = 150 - t.value.length;
 }
 
-/* ══════════════════════════════════════
+async function addComment(postId) {
+  const ta = document.getElementById('ci-' + postId); if (!ta) return;
+  const txt = ta.value.trim();
+  if (!txt) return toast('Vzkaz je prázdný.', 'err');
+  const { error } = await db.from('comments').insert([{
+    action_id: postId, author_username: CU.username,
+    body: txt, created_at: new Date().toISOString()
+  }]);
+  if (error) return toast('Chyba: ' + error.message, 'err');
+  ta.value = ''; const s = document.getElementById('cc-' + postId); if (s) s.textContent = '150';
+  renderFeed();
+}
+
+async function deleteComment(commentId, postId) {
+  if (!confirm('Smazat komentář?')) return;
+  await db.from('comments').delete().eq('id', commentId);
+  renderFeed();
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    ATTEND
-══════════════════════════════════════ */
-function attend(id){
-  const posts=allPosts(); const idx=posts.findIndex(p=>p.id===id); if(idx<0)return;
-  const p=posts[idx];
-  if((p.participants||[]).some(x=>x.username===CU.username))return;
-  const cap=p.capacity?p.capacity[CU.role]:null;
-  const cnt=(p.participants||[]).filter(x=>x.role===CU.role).length;
-  if(cap!==null&&cap!==undefined&&cnt>=cap){toast('Kapacita pro tvoji roli je naplněna.','err');return}
-  if(!p.participants)p.participants=[];
-  p.participants.push({username:CU.username,role:CU.role});
-  posts[idx]=p; savePosts(posts);
-  toast('Přihlášen/a na akci! 🦌','ok');
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+async function attend(postId) {
+  const { data: post } = await db.from('actions').select('*').eq('id', postId).single();
+  if (!post) return;
+  const parts = post.participants || [];
+  if (parts.some(x => x.username === CU.username)) return;
+  const cap = post.capacity ? post.capacity[CU.role] : null;
+  const cnt = parts.filter(x => x.role === CU.role).length;
+  if (cap !== null && cap !== undefined && cnt >= cap) { toast('Kapacita naplněna.', 'err'); return; }
+  parts.push({ username: CU.username, role: CU.role });
+  await db.from('actions').update({ participants: parts }).eq('id', postId);
+  toast('Přihlášen/a! 🦌', 'ok');
   renderFeed();
 }
 
-/* ══════════════════════════════════════
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    CREATE / EDIT POSTS
-══════════════════════════════════════ */
-function submitPost(){
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function setCreateType(t) {
+  createType = t;
+  document.getElementById('tc-ev').classList.toggle('on',   t === 'event');
+  document.getElementById('tc-post').classList.toggle('on', t === 'post');
+  document.getElementById('ev-fields').style.display = t === 'event' ? '' : 'none';
+}
+
+async function submitPost() {
   hideErr('cf-err');
-  const title=document.getElementById('cf-title').value.trim();
-  const body=document.getElementById('cf-body').value.trim();
-  if(!title)return showErr('cf-err','Zadej název / nadpis.');
-  const isEv=createType==='event';
-  let d={type:isEv?'event':'announcement',title,body,author:CU.username,createdAt:Date.now()};
-  if(isEv){
-    const dist=document.getElementById('cf-dist').value;
-    const date=document.getElementById('cf-date').value;
-    if(!dist)return showErr('cf-err','Vyber okres.');
-    if(!date)return showErr('cf-err','Vyber datum.');
-    d.date=date; d.time=document.getElementById('cf-time').value;
-    d.location=document.getElementById('cf-loc').value.trim();
-    d.district=dist; d.mapUrl=document.getElementById('cf-map').value.trim();
-    d.capacity={
-      pilot:+document.getElementById('cf-cp').value||0,
-      dobrovolnik:+document.getElementById('cf-cd').value||0,
-      zacatecnik:+document.getElementById('cf-cz').value||0,
+  const title = document.getElementById('cf-title').value.trim();
+  const body  = document.getElementById('cf-body').value.trim();
+  if (!title) return showErr('cf-err', 'Zadej název.');
+  const isEv = createType === 'event';
+  let data = {
+    type: isEv ? 'event' : 'announcement',
+    title, body,
+    author_username: CU.username,
+    created_at: new Date().toISOString(),
+    participants: [],
+  };
+  if (isEv) {
+    const dist = document.getElementById('cf-dist').value;
+    const date = document.getElementById('cf-date').value;
+    if (!dist) return showErr('cf-err', 'Vyber okres.');
+    if (!date) return showErr('cf-err', 'Vyber datum.');
+    data.event_date    = date;
+    data.event_time    = document.getElementById('cf-time').value;
+    data.location_name = document.getElementById('cf-loc').value.trim();
+    data.district      = dist;
+    data.map_url       = document.getElementById('cf-map').value.trim();
+    data.capacity      = {
+      pilot:       +document.getElementById('cf-cp').value || 0,
+      dobrovolnik: +document.getElementById('cf-cd').value || 0,
+      zacatecnik:  +document.getElementById('cf-cz').value || 0,
     };
   }
-  const posts=allPosts();
-  if(editPostId){
-    const i=posts.findIndex(p=>p.id===editPostId);
-    if(i>=0){ d.id=editPostId; d.createdAt=posts[i].createdAt; d.participants=posts[i].participants||[]; d.comments=posts[i].comments||[]; posts[i]=d; }
-    editPostId=null;
-    document.getElementById('cf-submit').textContent='Zveřejnit';
-    document.getElementById('cf-cancel').style.display='none';
-    document.getElementById('create-ttl').textContent='Nový příspěvek';
-    toast('Příspěvek upraven.','ok');
+  const btn = document.getElementById('cf-submit');
+  btn.disabled = true;
+  let error;
+  if (editPostId) {
+    ({ error } = await db.from('actions').update(data).eq('id', editPostId));
+    editPostId = null;
+    document.getElementById('cf-submit').textContent = 'Zveřejnit';
+    document.getElementById('cf-cancel').style.display = 'none';
+    document.getElementById('create-ttl').textContent = 'Nový příspěvek';
+    toast('Příspěvek upraven.', 'ok');
   } else {
-    d.id=uid(); d.participants=[]; d.comments=[];
-    posts.push(d);
-    sendNotif(d);
-    toast('Zveřejněno! 📢','ok');
+    ({ error } = await db.from('actions').insert([data]));
+    toast('Zveřejněno! 📢', 'ok');
+    sendNotif(data);
   }
-  savePosts(posts); clearCF(); renderFeed();
+  btn.disabled = false;
+  if (error) return showErr('cf-err', 'Chyba: ' + error.message);
+  clearCF();
+  renderFeed();
 }
 
-function clearCF(){
-  ['cf-title','cf-body','cf-date','cf-time','cf-loc','cf-map'].forEach(i=>{const e=document.getElementById(i);if(e)e.value=''});
-  document.getElementById('cf-dist').value='';
-  document.getElementById('cf-cp').value=5;
-  document.getElementById('cf-cd').value=10;
-  document.getElementById('cf-cz').value=5;
+function clearCF() {
+  ['cf-title','cf-body','cf-date','cf-time','cf-loc','cf-map'].forEach(id => { const e = document.getElementById(id); if (e) e.value = ''; });
+  document.getElementById('cf-dist').value = '';
+  document.getElementById('cf-cp').value = 5;
+  document.getElementById('cf-cd').value = 10;
+  document.getElementById('cf-cz').value = 5;
   hideErr('cf-err');
 }
 
-function deletePost(id){
-  if(!confirm('Smazat příspěvek?'))return;
-  savePosts(allPosts().filter(p=>p.id!==id));
-  toast('Smazáno.','info'); renderFeed();
+async function deletePost(id) {
+  if (!confirm('Smazat příspěvek?')) return;
+  await db.from('comments').delete().eq('action_id', id);
+  await db.from('actions').delete().eq('id', id);
+  toast('Smazáno.', 'info');
+  renderFeed();
 }
 
-function startEditPost(id){
-  const p=allPosts().find(x=>x.id===id); if(!p)return;
-  editPostId=id; createType=p.type==='event'?'event':'post'; setCreateType(createType);
-  document.getElementById('cf-title').value=p.title||'';
-  document.getElementById('cf-body').value=p.body||'';
-  if(p.type==='event'){
-    document.getElementById('cf-date').value=p.date||'';
-    document.getElementById('cf-time').value=p.time||'';
-    document.getElementById('cf-loc').value=p.location||'';
-    document.getElementById('cf-dist').value=p.district||'';
-    document.getElementById('cf-map').value=p.mapUrl||'';
-    document.getElementById('cf-cp').value=p.capacity?.pilot||0;
-    document.getElementById('cf-cd').value=p.capacity?.dobrovolnik||0;
-    document.getElementById('cf-cz').value=p.capacity?.zacatecnik||0;
+async function startEditPost(id) {
+  const { data: p } = await db.from('actions').select('*').eq('id', id).single();
+  if (!p) return;
+  editPostId = id; createType = p.type === 'event' ? 'event' : 'post'; setCreateType(createType);
+  document.getElementById('cf-title').value = p.title || '';
+  document.getElementById('cf-body').value  = p.body  || '';
+  if (p.type === 'event') {
+    document.getElementById('cf-date').value = p.event_date    || '';
+    document.getElementById('cf-time').value = p.event_time    || '';
+    document.getElementById('cf-loc').value  = p.location_name || '';
+    document.getElementById('cf-dist').value = p.district      || '';
+    document.getElementById('cf-map').value  = p.map_url       || '';
+    document.getElementById('cf-cp').value   = p.capacity?.pilot       || 0;
+    document.getElementById('cf-cd').value   = p.capacity?.dobrovolnik || 0;
+    document.getElementById('cf-cz').value   = p.capacity?.zacatecnik  || 0;
   }
-  document.getElementById('cf-submit').textContent='Uložit';
-  document.getElementById('cf-cancel').style.display='';
-  document.getElementById('create-ttl').textContent='Upravit příspěvek';
-  document.getElementById('create-sec').scrollIntoView({behavior:'smooth',block:'start'});
+  document.getElementById('cf-submit').textContent = 'Uložit';
+  document.getElementById('cf-cancel').style.display = '';
+  document.getElementById('create-ttl').textContent = 'Upravit příspěvek';
+  document.getElementById('create-sec').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-function cancelEdit(){
-  editPostId=null; clearCF();
-  document.getElementById('cf-submit').textContent='Zveřejnit';
-  document.getElementById('cf-cancel').style.display='none';
-  document.getElementById('create-ttl').textContent='Nový příspěvek';
+function cancelEdit() {
+  editPostId = null; clearCF();
+  document.getElementById('cf-submit').textContent = 'Zveřejnit';
+  document.getElementById('cf-cancel').style.display = 'none';
+  document.getElementById('create-ttl').textContent = 'Nový příspěvek';
 }
 
-/* ══════════════════════════════════════
-   USERS PAGE
-══════════════════════════════════════ */
-function renderUsers(){
-  const canMod=isMod()||isAdmin();
-  document.getElementById('utbl-ah').textContent=canMod?'Akce':'';
-  const users=allUsers();
-  const now=Date.now();
-  const rows=Object.values(users).map(u=>{
-    const sr=u.systemRole?`<span style="font-size:.7rem;color:${u.systemRole==='admin'?'var(--amber2)':'var(--blue2)'}"> (${RL[u.systemRole]||u.systemRole})</span>`:'';
-    const timed=u.timeoutUntil&&now<u.timeoutUntil;
-    const statusTxt=timed?`<span class="to-badge">⏱ Timeout</span>`:'<span style="font-size:.76rem;color:var(--text3)">Aktivní</span>';
-    let acts='';
-    if(canMod && u.username!==CU.username && u.systemRole!=='admin'){
-      acts=`<div class="u-actions">
-        <button class="btn ba bsm" onclick="openEditUser('${u.username}')">✏️</button>
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   USERS (Community)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+async function renderUsers() {
+  const el = document.getElementById('user-cards');
+  el.innerHTML = '<div class="empty"><div class="ei">⏳</div><p>Načítám členy…</p></div>';
+  const { data: users, error } = await db.from('profiles').select('*').order('created_at', { ascending: true });
+  if (error || !users) { el.innerHTML = `<div class="empty"><div class="ei">⚠️</div><p>Chyba načtení.</p></div>`; return; }
+  const canMod = canCreate();
+  const now = Date.now();
+  el.innerHTML = users.map(u => {
+    const sr = sysRole(u.username);
+    const timed = u.timeout_until && now < new Date(u.timeout_until).getTime();
+    const srBadge = sr ? `<span class="tb-badge ${sr}" style="margin-left:6px">${sr === 'admin' ? '⭐ Admin' : '🛡️ Mod'}</span>` : '';
+    let acts = '';
+    if (canMod && u.username !== CU.username && sr !== 'admin') {
+      acts = `<div class="user-actions-row">
+        <button class="btn btn-a btn-sm" onclick="openEditUser('${u.username}')">✏️ Upravit</button>
         ${timed
-          ?`<button class="btn bs bsm" onclick="removeTO('${u.username}')">↩ Zrušit</button>`
-          :`<button class="btn bd bsm" onclick="applyTO('${u.username}')">⏱ 24h</button>`}
+          ? `<button class="btn btn-s btn-sm" onclick="removeTO('${u.username}')">↩ Zrušit timeout</button>`
+          : `<button class="btn btn-d btn-sm" onclick="applyTO('${u.username}')">⏱ Timeout 24h</button>`}
       </div>`;
-    } else if(canMod && u.systemRole==='admin'){
-      acts='<span style="font-size:.74rem;color:var(--text3)">—</span>';
     }
-    return `<tr>
-      <td><strong>${esc(u.username)}</strong>${sr}</td>
-      <td>${(RL[u.role]||u.role)}</td>
-      <td>${esc(u.district)}</td>
-      <td>${statusTxt}</td>
-      <td>${acts}</td>
-    </tr>`;
+    return `<div class="user-card">
+      <div class="user-av">${u.username.slice(0,2).toUpperCase()}</div>
+      <div class="user-info">
+        <div class="user-name">${esc(u.username)}${srBadge}${timed ? '<span class="to-badge" style="margin-left:6px">⏱ Timeout</span>' : ''}</div>
+        <div class="user-meta">${RL[u.role] || u.role} · ${esc(u.district)}</div>
+        ${acts}
+      </div>
+    </div>`;
   }).join('');
-  document.getElementById('utbl-body').innerHTML=rows||'<tr><td colspan="5">Žádní uživatelé.</td></tr>';
+  if (!el.innerHTML) el.innerHTML = '<div class="empty"><div class="ei">👥</div><p>Žádní členové.</p></div>';
 }
 
-function applyTO(username){
-  if(!confirm(`Timeout 24h pro ${username}?`))return;
-  const u=getUser(username); if(!u)return;
-  u.timeoutUntil=Date.now()+TO_DURATION; saveOneUser(u);
-  toast(`Timeout aplikován.`,'info'); renderUsers();
+async function applyTO(username) {
+  if (!confirm(`Timeout 24h pro ${username}?`)) return;
+  const until = new Date(Date.now() + TO_DURATION).toISOString();
+  await db.from('profiles').update({ timeout_until: until }).eq('username', username);
+  toast(`Timeout aplikován.`, 'info');
+  renderUsers();
 }
-function removeTO(username){
-  const u=getUser(username); if(!u)return;
-  delete u.timeoutUntil; saveOneUser(u);
-  toast(`Timeout zrušen.`,'ok'); renderUsers();
+async function removeTO(username) {
+  await db.from('profiles').update({ timeout_until: null }).eq('username', username);
+  toast(`Timeout zrušen.`, 'ok');
+  renderUsers();
 }
-function openEditUser(username){
-  const u=getUser(username); if(!u)return;
-  document.getElementById('m-title').textContent=`Upravit: ${username}`;
-  document.getElementById('m-body').innerHTML=`
+function openEditUser(username) {
+  document.getElementById('m-title').textContent = `Upravit: ${username}`;
+  document.getElementById('m-body').innerHTML = `
     <div class="fg"><label>Role</label>
       <select id="eu-r">
-        <option value="pilot" ${u.role==='pilot'?'selected':''}>🚁 Pilot</option>
-        <option value="dobrovolnik" ${u.role==='dobrovolnik'?'selected':''}>🤝 Dobrovolník</option>
-        <option value="zacatecnik" ${u.role==='zacatecnik'?'selected':''}>🌱 Začátečník</option>
+        <option value="pilot">🚁 Pilot</option>
+        <option value="dobrovolnik">🤝 Dobrovolník</option>
+        <option value="zacatecnik">🌱 Začátečník</option>
       </select>
     </div>
     <div class="fg"><label>Okres</label>
-      <select id="eu-d">${DISTRICTS.map(d=>`<option ${u.district===d?'selected':''}>${d}</option>`).join('')}</select>
+      <select id="eu-d">${DISTRICTS.map(d => `<option>${d}</option>`).join('')}</select>
     </div>
     <div class="modal-foot">
-      <button class="btn bs bsm" onclick="closeModal()">Zrušit</button>
-      <button class="btn bp bsm" style="width:auto" onclick="saveEditUser('${username}')">Uložit</button>
+      <button class="btn btn-s btn-sm" onclick="closeModal()">Zrušit</button>
+      <button class="btn btn-p btn-sm" style="width:auto" onclick="saveEditUser('${username}')">Uložit</button>
     </div>`;
+  // prefill async
+  db.from('profiles').select('role,district').eq('username', username).single().then(({ data }) => {
+    if (data) { document.getElementById('eu-r').value = data.role; document.getElementById('eu-d').value = data.district; }
+  });
   openModal();
 }
-function saveEditUser(username){
-  const u=getUser(username); if(!u)return;
-  u.role=document.getElementById('eu-r').value;
-  u.district=document.getElementById('eu-d').value;
-  saveOneUser(u);
-  toast(`Uloženo.`,'ok'); closeModal(); renderUsers();
+async function saveEditUser(username) {
+  const role     = document.getElementById('eu-r').value;
+  const district = document.getElementById('eu-d').value;
+  await db.from('profiles').update({ role, district }).eq('username', username);
+  toast(`Uloženo.`, 'ok');
+  closeModal();
+  renderUsers();
 }
 
-/* ══════════════════════════════════════
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    CONTACTS
-══════════════════════════════════════ */
-function renderContacts(){
-  const q=(document.getElementById('ct-search').value||'').toLowerCase();
-  let cts=allContacts();
-  if(q)cts=cts.filter(c=>(c.name||'').toLowerCase().includes(q)||(c.district||'').toLowerCase().includes(q)||(c.phone||'').includes(q)||(c.note||'').toLowerCase().includes(q));
-  const el=document.getElementById('ct-list');
-  if(!cts.length){
-    el.innerHTML=`<div class="empty"><div class="ei">🚜</div><p>${q?'Žádné výsledky.':'Zatím žádné kontakty.<br>Přidej prvního zemědělce!'}</p></div>`; return;
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+async function renderContacts() {
+  const q = (document.getElementById('ct-search').value || '').toLowerCase();
+  const el = document.getElementById('ct-list');
+  let { data: cts, error } = await db.from('contacts').select('*').order('name', { ascending: true });
+  if (error) { el.innerHTML = `<div class="empty"><div class="ei">⚠️</div><p>${esc(error.message)}</p></div>`; return; }
+  if (q) cts = (cts || []).filter(c =>
+    (c.name||'').toLowerCase().includes(q) ||
+    (c.district||'').toLowerCase().includes(q) ||
+    (c.phone||'').includes(q) ||
+    (c.note||'').toLowerCase().includes(q)
+  );
+  if (!cts || !cts.length) {
+    el.innerHTML = `<div class="empty"><div class="ei">🚜</div><p>${q ? 'Žádné výsledky.' : 'Zatím žádné kontakty.<br>Přidej prvního zemědělce!'}</p></div>`;
+    return;
   }
-  el.innerHTML=cts.map(c=>`
-    <div class="ct">
+  el.innerHTML = cts.map(c => {
+    const canDel = canCreate() || CU.username === c.added_by;
+    const btns = canDel
+      ? `<div class="ct-btns">
+          <button class="btn btn-a btn-icon btn-sm" onclick="openContactModal('${c.id}')"><span class="ms" style="font-size:16px">edit</span></button>
+          <button class="btn btn-d btn-icon btn-sm" onclick="delContact('${c.id}')"><span class="ms" style="font-size:16px">delete</span></button>
+        </div>` : '';
+    return `<div class="ct">
       <div class="ct-top">
         <div>
           <div class="ct-name">${esc(c.name)}</div>
           <div class="ct-chips">
-            ${c.district?`<span class="ct-chip">🗺 ${esc(c.district)}</span>`:''}
-            ${c.phone?`<a href="tel:${esc(c.phone)}" class="ct-chip">📞 ${esc(c.phone)}</a>`:''}
-            ${c.rating?`<span class="star">${'⭐'.repeat(Math.min(5,c.rating))}</span>`:''}
+            ${c.district ? `<span class="ct-chip">🗺 ${esc(c.district)}</span>` : ''}
+            ${c.phone    ? `<a href="tel:${esc(c.phone)}" class="ct-chip">📞 ${esc(c.phone)}</a>` : ''}
+            ${c.rating   ? `<span class="star-badge">${'⭐'.repeat(Math.min(5, c.rating))}</span>` : ''}
           </div>
-          ${c.note?`<div class="ct-note">${esc(c.note)}</div>`:''}
+          ${c.note ? `<div class="ct-note">${esc(c.note)}</div>` : ''}
         </div>
-        <div class="ct-btns">
-          <button class="btn ba bsm" onclick="openContactModal('${c.id}')">✏️</button>
-          <button class="btn bd bsm" onclick="delContact('${c.id}')">🗑️</button>
-        </div>
+        ${btns}
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
-function openContactModal(id){
-  const c=id?allContacts().find(x=>x.id===id):null;
-  editCtId=id||null;
-  document.getElementById('m-title').textContent=c?'Upravit kontakt':'Přidat kontakt';
-  document.getElementById('m-body').innerHTML=`
-    <div class="fg"><label>Název / Jméno *</label><input id="cc-n" type="text" value="${esc(c?.name||'')}" placeholder="Pan Novák / Agro Plzeň s.r.o."></div>
+function openContactModal(id) {
+  editCtId = id || null;
+  document.getElementById('m-title').textContent = id ? 'Upravit kontakt' : 'Přidat kontakt';
+  document.getElementById('m-body').innerHTML = `
+    <div class="fg"><label>Název / Jméno *</label><input id="cc-n" type="text" placeholder="Pan Novák / Agro Plzeň s.r.o."></div>
     <div class="form-row">
-      <div class="fg"><label>Telefon</label><input id="cc-p" type="tel" value="${esc(c?.phone||'')}" placeholder="+420…"></div>
+      <div class="fg"><label>Telefon</label><input id="cc-p" type="tel" placeholder="+420…"></div>
       <div class="fg"><label>Okres</label>
-        <select id="cc-d"><option value="">-- všechny --</option>${DISTRICTS.map(d=>`<option ${c?.district===d?'selected':''}>${d}</option>`).join('')}</select>
+        <select id="cc-d"><option value="">-- všechny --</option>${DISTRICTS.map(d => `<option>${d}</option>`).join('')}</select>
       </div>
     </div>
     <div class="fg"><label>Hodnocení</label>
-      <select id="cc-r"><option value="">bez hodnocení</option>${[1,2,3,4,5].map(n=>`<option value="${n}" ${c?.rating==n?'selected':''}>${'⭐'.repeat(n)}</option>`).join('')}</select>
+      <select id="cc-r"><option value="0">bez hodnocení</option>${[1,2,3,4,5].map(n=>`<option value="${n}">${'⭐'.repeat(n)}</option>`).join('')}</select>
     </div>
-    <div class="fg"><label>Poznámka</label><textarea id="cc-note" rows="3" placeholder="Pan Novák – super domluva, hlásí dopředu…">${esc(c?.note||'')}</textarea></div>
+    <div class="fg"><label>Poznámka</label><textarea id="cc-note" rows="3" placeholder="Pan Novák – super domluva…"></textarea></div>
     <div class="modal-foot">
-      <button class="btn bs bsm" onclick="closeModal()">Zrušit</button>
-      <button class="btn bp bsm" style="width:auto" onclick="saveContact()">Uložit</button>
+      <button class="btn btn-s btn-sm" onclick="closeModal()">Zrušit</button>
+      <button class="btn btn-p btn-sm" style="width:auto" onclick="saveContact()">Uložit</button>
     </div>`;
+  if (id) {
+    db.from('contacts').select('*').eq('id', id).single().then(({ data }) => {
+      if (!data) return;
+      document.getElementById('cc-n').value    = data.name     || '';
+      document.getElementById('cc-p').value    = data.phone    || '';
+      document.getElementById('cc-d').value    = data.district || '';
+      document.getElementById('cc-r').value    = data.rating   || 0;
+      document.getElementById('cc-note').value = data.note     || '';
+    });
+  }
   openModal();
 }
-function saveContact(){
-  const name=document.getElementById('cc-n').value.trim();
-  if(!name)return toast('Zadej název/jméno.','err');
-  const cts=allContacts();
-  const entry={
-    id:editCtId||uid(),name,
-    phone:document.getElementById('cc-p').value.trim(),
-    district:document.getElementById('cc-d').value,
-    rating:+document.getElementById('cc-r').value||0,
-    note:document.getElementById('cc-note').value.trim(),
-    updatedAt:Date.now(),
+
+async function saveContact() {
+  const name = document.getElementById('cc-n').value.trim();
+  if (!name) return toast('Zadej název/jméno.', 'err');
+  const entry = {
+    name,
+    phone:    document.getElementById('cc-p').value.trim(),
+    district: document.getElementById('cc-d').value,
+    rating:   +document.getElementById('cc-r').value || 0,
+    note:     document.getElementById('cc-note').value.trim(),
+    added_by: CU.username,
   };
-  if(editCtId){ const i=cts.findIndex(c=>c.id===editCtId); if(i>=0)cts[i]=entry; else cts.push(entry); }
-  else cts.push(entry);
-  saveContacts(cts); closeModal(); renderContacts(); toast('Kontakt uložen.','ok');
-}
-function delContact(id){
-  if(!confirm('Smazat kontakt?'))return;
-  saveContacts(allContacts().filter(c=>c.id!==id));
-  renderContacts(); toast('Smazáno.','info');
+  let error;
+  if (editCtId) {
+    ({ error } = await db.from('contacts').update(entry).eq('id', editCtId));
+  } else {
+    ({ error } = await db.from('contacts').insert([entry]));
+  }
+  if (error) return toast('Chyba: ' + error.message, 'err');
+  closeModal();
+  renderContacts();
+  toast('Kontakt uložen.', 'ok');
 }
 
-/* ══════════════════════════════════════
+async function delContact(id) {
+  if (!confirm('Smazat kontakt?')) return;
+  await db.from('contacts').delete().eq('id', id);
+  renderContacts();
+  toast('Smazáno.', 'info');
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    GUIDES
-══════════════════════════════════════ */
-const GUIDES={
-  start:{title:'Jak začít jako dobrovolník',html:`<div style="color:var(--text2);font-size:.88rem;line-height:1.7">
-    <p><strong style="color:var(--green3)">1. Registrace</strong><br>Zaregistruj se, vyber roli Dobrovolník a svůj okres.</p><br>
-    <p><strong style="color:var(--green3)">2. Sleduj Nástěnku</strong><br>Akce přidávají admini. Zapni si oznámení v Nastavení!</p><br>
-    <p><strong style="color:var(--green3)">3. Přihlas se na akci</strong><br>Klikni na Zúčastnit se. Kapacity jsou oddělené pro každou roli.</p><br>
-    <p><strong style="color:var(--green3)">4. Co s sebou</strong><br>Pevná obuv, reflexní vesta, nabitý telefon. Přijď včas na sraz.</p><br>
-    <p><strong style="color:var(--green3)">5. Komentáře</strong><br>Organizační vzkazypiš přímo pod danou akci.</p>
-  </div>`},
-  drone:{title:'Průkaz pilota dronu',html:`<div style="color:var(--text2);font-size:.88rem;line-height:1.7">
-    <p><strong style="color:var(--green3)">Kategorie A1/A3 (online, zdarma)</strong><br>Online test na caa.cz. Platnost 5 let. Pro drony do 250 g nebo mimo civilizaci.</p><br>
-    <p><strong style="color:var(--green3)">Kategorie A2</strong><br>Teorie online + zkouška u akreditovaného subjektu. Cca 1 500–2 500 Kč.</p><br>
-    <p><strong style="color:var(--green3)">Registrace provozovatele</strong><br>Povinná pro drony nad 250 g. Online na caa.cz, 100 Kč/3 roky.</p><br>
-    <a href="https://www.caa.cz/" target="_blank" style="color:var(--green2)">→ caa.cz</a>
-  </div>`},
-  thermal:{title:'Termovize a záchrana srnčat',html:`<div style="color:var(--text2);font-size:.88rem;line-height:1.7">
-    <p><strong style="color:var(--green3)">Proč ráno?</strong><br>Nejlepší čas je 4–7 h ráno, kdy je kontrast těla vůči chladné trávě největší.</p><br>
-    <p><strong style="color:var(--green3)">Postup přeletu</strong><br>Systematické pruhy 20–30 m od sebe, výška 40–60 m. GPS zaznamená polohu srnčete.</p><br>
-    <p><strong style="color:var(--green3)">Co po nalezení</strong><br>Srnčete se NEDotýkej holýma rukama! Přeneste ho na kraj pole pomocí rukavic nebo deky.</p>
-  </div>`},
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+const GUIDES = {
+  start: { title: 'Jak začít jako dobrovolník', html: `<p style="font-size:.9rem;color:var(--text2);line-height:1.7">
+    <strong style="color:var(--primary-dark)">1. Registrace</strong><br>Zaregistruj se, vyber roli a okres.<br><br>
+    <strong style="color:var(--primary-dark)">2. Nástěnka</strong><br>Akce přidávají admini. Zapni si oznámení!<br><br>
+    <strong style="color:var(--primary-dark)">3. Zúčastnit se</strong><br>Klikni na Zúčastnit se. Kapacity jsou oddělené.<br><br>
+    <strong style="color:var(--primary-dark)">4. Co s sebou</strong><br>Pevná obuv, reflexní vesta, nabitý telefon.<br><br>
+    <strong style="color:var(--primary-dark)">5. Komentáře</strong><br>Organizační vzkazypiš přímo pod akci.
+  </p>` },
+  drone: { title: 'Průkaz pilota dronu', html: `<p style="font-size:.9rem;color:var(--text2);line-height:1.7">
+    <strong style="color:var(--primary-dark)">Kategorie A1/A3</strong><br>Online test na caa.cz. Zdarma, platnost 5 let.<br><br>
+    <strong style="color:var(--primary-dark)">Kategorie A2</strong><br>Teorie online + zkouška. Cca 1 500–2 500 Kč.<br><br>
+    <strong style="color:var(--primary-dark)">Registrace</strong><br>Povinná pro drony nad 250 g. 100 Kč/3 roky.<br><br>
+    <a href="https://www.caa.cz/" target="_blank" style="color:var(--primary)">→ caa.cz</a>
+  </p>` },
+  thermal: { title: 'Termovize a záchrana srnčat', html: `<p style="font-size:.9rem;color:var(--text2);line-height:1.7">
+    <strong style="color:var(--primary-dark)">Proč ráno?</strong><br>Nejlepší čas je 4–7 h. Největší teplotní kontrast.<br><br>
+    <strong style="color:var(--primary-dark)">Postup přeletu</strong><br>Pruhy 20–30 m od sebe, výška 40–60 m.<br><br>
+    <strong style="color:var(--primary-dark)">Po nalezení</strong><br>NEDotýkej se holýma rukama! Přeneste rukavicemi na kraj pole.
+  </p>` },
 };
-function showGuide(k){
-  const g=GUIDES[k]; if(!g)return;
-  document.getElementById('m-title').textContent=g.title;
-  document.getElementById('m-body').innerHTML=g.html+`<div class="modal-foot"><button class="btn bs bsm" onclick="closeModal()">Zavřít</button></div>`;
+function showGuide(k) {
+  const g = GUIDES[k]; if (!g) return;
+  document.getElementById('m-title').textContent = g.title;
+  document.getElementById('m-body').innerHTML = g.html + `<div class="modal-foot"><button class="btn btn-s btn-sm" onclick="closeModal()">Zavřít</button></div>`;
   openModal();
 }
 
-/* ══════════════════════════════════════
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    NOTIFICATIONS
-══════════════════════════════════════ */
-function buildNotif(){
-  const u=CU;
-  document.getElementById('n-all').checked=u.notifAll||false;
-  document.getElementById('n-dists').innerHTML=DISTRICTS.map(d=>`
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function buildNotif() {
+  document.getElementById('n-all').checked = CU.notif_all || false;
+  document.getElementById('n-dists').innerHTML = DISTRICTS.map(d => `
     <label class="nd-row">
-      <input type="checkbox" value="${d}" ${(u.notifDistricts||[]).includes(d)?'checked':''} onchange="saveNotif()">
+      <input type="checkbox" value="${d}" ${(CU.notif_districts || []).includes(d) ? 'checked' : ''} onchange="saveNotif()">
       ${d}
     </label>`).join('');
 }
-function saveNotif(){
-  const all=document.getElementById('n-all').checked;
-  const dists=[...document.querySelectorAll('#n-dists input:checked')].map(i=>i.value);
-  CU.notifAll=all; CU.notifDistricts=dists;
-  saveOneUser(CU);
-  toast('Uloženo.','ok');
-  if(all||dists.length) reqNotif();
+async function saveNotif() {
+  const all    = document.getElementById('n-all').checked;
+  const dists  = [...document.querySelectorAll('#n-dists input:checked')].map(i => i.value);
+  CU.notif_all = all; CU.notif_districts = dists;
+  await db.from('profiles').update({ notif_all: all, notif_districts: dists }).eq('username', CU.username);
+  toast('Uloženo.', 'ok');
+  if (all || dists.length) reqNotif();
 }
-function reqNotif(){
-  if(!('Notification' in window))return;
-  if(Notification.permission==='default') Notification.requestPermission().then(p=>{if(p==='granted')toast('Oznámení povolena! 🔔','ok')});
+function reqNotif() {
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'default') Notification.requestPermission().then(p => { if (p === 'granted') toast('Oznámení povolena! 🔔', 'ok'); });
 }
-function sendNotif(action){
-  const u=CU; if(!u)return;
-  if(!u.notifAll&&!(u.notifDistricts||[]).includes(action.district))return;
-  const title=`🦌 FawnGuard – ${action.type==='event'?'Nová akce':'Nový příspěvek'}`;
-  const body=`${action.title}${action.district?' · '+action.district:''}`;
-  if(Notification.permission==='granted') new Notification(title,{body,icon:'icons/icon-192.png'});
-  else toast('🔔 '+body,'info');
+function sendNotif(action) {
+  if (!CU) return;
+  if (!CU.notif_all && !(CU.notif_districts || []).includes(action.district)) return;
+  const title = `🦌 FawnGuard – ${action.type === 'event' ? 'Nová akce' : 'Nový příspěvek'}`;
+  const body  = `${action.title}${action.district ? ' · ' + action.district : ''}`;
+  if (Notification.permission === 'granted') new Notification(title, { body, icon: 'icons/icon-192.png' });
+  else toast('🔔 ' + body, 'info');
 }
 
-/* ══════════════════════════════════════
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    PROFILE
-══════════════════════════════════════ */
-function renderProfile(){
-  const u=CU;
-  document.getElementById('pav').textContent=u.username.slice(0,2).toUpperCase();
-  document.getElementById('pname').textContent=u.username;
-  const sr=u.systemRole?` · ${RL[u.systemRole]||u.systemRole}`:'';
-  document.getElementById('pmeta').textContent=`${RL[u.role]||u.role} · ${u.district}${sr}`;
-  document.getElementById('p-role').value=u.role;
-  document.getElementById('p-dist').value=u.district;
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function renderProfile() {
+  document.getElementById('pav').textContent    = CU.username.slice(0,2).toUpperCase();
+  document.getElementById('pname').textContent  = CU.username;
+  const sr = CU.systemRole ? ` · ${RL[CU.systemRole] || CU.systemRole}` : '';
+  document.getElementById('pmeta').textContent  = `${RL[CU.role] || CU.role} · ${CU.district}${sr}`;
+  document.getElementById('p-role').value  = CU.role;
+  document.getElementById('p-dist').value  = CU.district;
 }
-function saveProfile(){
-  CU.role=document.getElementById('p-role').value;
-  CU.district=document.getElementById('p-dist').value;
-  saveOneUser(CU); updateTopbar(); renderProfile(); toast('Profil uložen.','ok');
+async function saveProfile() {
+  const role     = document.getElementById('p-role').value;
+  const district = document.getElementById('p-dist').value;
+  CU.role = role; CU.district = district;
+  await db.from('profiles').update({ role, district }).eq('username', CU.username);
+  updateTopbar(); renderProfile();
+  toast('Profil uložen.', 'ok');
 }
 
-/* ══════════════════════════════════════
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    MODAL
-══════════════════════════════════════ */
-function openModal(){ document.getElementById('overlay').classList.remove('hidden') }
-function closeModal(){ document.getElementById('overlay').classList.add('hidden') }
-function overlayBg(e){ if(e.target===document.getElementById('overlay'))closeModal() }
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function openModal()  { document.getElementById('overlay').classList.remove('hidden'); }
+function closeModal() { document.getElementById('overlay').classList.add('hidden'); }
+function overlayBg(e) { if (e.target === document.getElementById('overlay')) closeModal(); }
 
-/* ══════════════════════════════════════
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    TOAST
-══════════════════════════════════════ */
-function toast(msg,type='ok'){
-  const c=document.getElementById('toast-ct');
-  const t=document.createElement('div'); t.className=`toast ${type}`; t.textContent=msg;
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function toast(msg, type = 'ok') {
+  const c = document.getElementById('toast-ct');
+  const t = document.createElement('div'); t.className = `toast ${type}`;
+  const icons = { ok: '✓', err: '✕', info: 'ℹ' };
+  t.innerHTML = `<span>${icons[type] || '✓'}</span><span>${esc(msg)}</span>`;
   c.appendChild(t);
-  setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity .3s';setTimeout(()=>t.remove(),350)},3000);
+  setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity .3s'; setTimeout(() => t.remove(), 350); }, 3200);
 }
 
-/* ══════════════════════════════════════
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    INIT
-══════════════════════════════════════ */
-document.addEventListener('DOMContentLoaded', boot);
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+document.addEventListener('DOMContentLoaded', async () => {
+  await boot();
+  // Background cleanup
+  if (CU) cleanOldEvents();
+});
 </script>
 </body>
 </html>
